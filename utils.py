@@ -39,6 +39,9 @@ def read_json(filepath):
 
 
 def is_valid_hostname(hostname):
+    """
+    from : https://stackoverflow.com/questions/2532053/validate-a-hostname-string
+    """
     if len(hostname) > 255:
         return False
     if hostname[-1] == ".":
