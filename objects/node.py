@@ -1,4 +1,4 @@
-from edge import Edge
+from objects.edge import Edge
 
 class Node:
     

@@ -1,5 +1,5 @@
 import socket
-from leaf import Leaf
+from objects.leaf import Leaf
 
 class Edge:
     def __init__(self):

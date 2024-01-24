@@ -1,4 +1,4 @@
-from node import Node
+from objects.node import Node
 
 class Tree:
 
@@ -8,11 +8,14 @@ class Tree:
         self.nodes = {}
 
     def add_node(self, node):
-        node_name = node.dir + " " + node.comp
-        self.nodes[node_name] = node
+        if type(node) is Node:
+            node_name = node.dir + " " + node.comp
+            self.nodes[node_name] = node
+        else:
+            print("ERROR! Expected type: Node, received type: " + type(node))
 
     def get_node(self, node_name):
-        return self.nodes[node_name]
+        return self.nodes[node_name] if node_name in self.nodes else None
     
     def get_all_nodes(self):
         return self.nodes
