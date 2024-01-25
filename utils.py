@@ -2,6 +2,7 @@ import csv
 import json
 import os
 import re
+import socket
 
 
 def read_csv(filepath):
@@ -48,3 +49,16 @@ def is_valid_hostname(hostname):
         hostname = hostname[:-1] # strip exactly one dot from the right, if present
     allowed = re.compile("(?!-)[A-Z\d-]{1,63}(?<!-)$", re.IGNORECASE)
     return all(allowed.match(x) for x in hostname.split("."))
+
+
+def get_domain(ip):
+    if ip != "*":
+        try:
+            res = socket.gethostbyaddr(ip)
+            domain = res[0]
+        except:
+            domain = ip
+    else:
+        domain = "*"
+    
+    return domain

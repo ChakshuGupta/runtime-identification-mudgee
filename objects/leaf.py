@@ -1,25 +1,42 @@
+import json
 class Leaf:
-    def __init__(self, ethtype=None, proto=None, port=None):
-        self.ethtype = ethtype
-        self.proto = proto
-        self.port = port
-        self.port_type = None
+    def __init__(self):
+        self.ethtype = None
+        # intiialise src and dest IPs
+        self.sip = None
+        self.dip = None
+        # initialise src and dest ports
+        self.sport = None
+        self.dport = None
+        # initialise protocol
+        self.proto = None
     
-    def set_ethtype(self, ethtype):
-        self.ethtype = ethtype
-    
-    def get_ethtype(self):
-        return self.ethtype
-    
-    def set_proto(self, proto):
-        self.proto = proto
+    def print(self):
+        """
+        """
+        data = {
+            'sip' : self.sip,
+            'dip' : self.dip,
+            'sport' : self.sport,
+            'dport' : self.dport,
+            'ip_proto' : self.proto,
+        }
+        print(json.dumps(data, indent=4))
 
-    def get_proto(self):
-        return self.proto
-    
-    def set_port(self, port, port_type):
-        self.port = port
-        self.port_type = port_type
 
-    def get_port(self):
-        return self.port, self.port_type
+    def set_from_profile(self, flow):
+        """
+        Generate flow from MUD profile
+        """
+        self.sip = flow["srcIp"]
+        self.dip = flow["dstIp"]
+
+        self.sport = flow["srcPort"]
+        self.dport = flow["dstPort"]
+
+        self.proto = flow["ipProto"]
+        
+        return self
+
+    def get_flow(self):
+        return (self.sip, self.dip, self.sport, self.dport, self.proto)

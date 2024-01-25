@@ -3,8 +3,7 @@ import sys
 
 from ipaddress import ip_address
 
-from utils import read_csv, is_valid_hostname
-from objects.edge import Edge
+from utils import read_csv, is_valid_hostname, get_domain
 from objects.leaf import Leaf
 from objects.node import Node
 from objects.tree import Tree
@@ -36,62 +35,73 @@ def load_mud_profiles(model_dir):
                 continue
 
 
+def add_to_node(comp, dir, mud_tree, flow):
+    node_name = dir + " " + comp
+    node = mud_tree.get_node(node_name)
+    if node is None:
+        node = Node(comp, dir)
+
+    leaf = Leaf()
+    leaf = leaf.set_from_profile(flow)
+
+    if comp == "Local" and dir == "to":
+        domain = get_domain(flow["dstIp"])
+        node.add_leaf(leaf, domain)
+    elif comp == "Local" and dir == "from":
+        domain = get_domain(flow["srcIp"])
+        node.add_leaf(leaf, domain)
+    elif comp == "Internet" and dir == "to":
+        domain = get_domain(flow["dstIp"])
+        node.add_leaf(leaf, domain)
+    elif comp == "Internet" and dir == "from":
+        domain = get_domain(flow["srcIp"])
+        node.add_leaf(leaf, domain)
+
+    mud_tree.add_node(node)
+
+
 def generate_mud_tree(device_flows, device_name):
     mud_tree = Tree(device_name)
     for flow in device_flows:
         try:
             if flow["srcIp"]!= "*" and ip_address(flow["srcIp"]).is_private:
-                node_name = "from LOCAL"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("LOCAL", "from")       
+                comp = "Local"
+                dir = "from"
                 
-                mud_tree.add_node(node)
             else:
-                node_name = "from INTERNET"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("INTERNET", "from")       
-                
-                mud_tree.add_node(node)
+                comp = "Internet"
+                dir = "from"
+            
+            add_to_node(comp, dir, mud_tree, flow)
 
         except ValueError:
             if is_valid_hostname(flow["srcIp"]):
-                node_name = "from INTERNET"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("INTERNET", "from")       
-                
-                mud_tree.add_node(node)
+                comp = "Internet"
+                dir = "from"
+                add_to_node(comp, dir, mud_tree, flow)
 
         try:
 
             if flow["dstIp"]!= "*" and ip_address(flow["dstIp"]).is_private:
-                node_name = "to LOCAL"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("LOCAL", "to")    
-                
-                mud_tree.add_node(node)
+                comp = "Local"
+                dir = "to"
+
             else:
-                node_name = "to INTERNET"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("INTERNET", "to")    
-                
-                mud_tree.add_node(node)
+                comp = "Internet"
+                dir = "to"
+            
+            add_to_node(comp, dir, mud_tree, flow)
 
         except ValueError:
             if is_valid_hostname(flow["dstIp"]):
-                node_name = "to INTERNET"
-                node = mud_tree.get_node(node_name)
-                if node is None:
-                    node = Node("INTERNET", "to")       
-                
-                mud_tree.add_node(node)
+                comp = "Internet"
+                dir = "to"
+                add_to_node(comp, dir, mud_tree, flow)
             
         leaf = Leaf()
-    return
+    
+    print(mud_tree.get_all_nodes())
+    return mud_tree
 
 
 if __name__ == "__main__":

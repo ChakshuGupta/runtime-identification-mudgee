@@ -1,4 +1,4 @@
-from objects.edge import Edge
+from objects.leaf import Leaf
 
 class Node:
     
@@ -8,16 +8,20 @@ class Node:
         # direction of communication
         self.dir = dir
 
-        self.edges = list()
+        self.edges = {}
 
-    def add_edge(self, edge):
-        if type(edge) is Edge:
-            self.edges.append(edge)
+    def add_leaf(self, leaf, domain):
+        if type(leaf) is Leaf:
+            if domain not in self.edges:
+                self.edges[domain] = []
+            self.edges[domain].append(leaf)
         else:
-            print("ERROR! Exepected type: Edge, received type: "+ type(edge))
+            print("ERROR! Exepected type: Leaf, received type: "+ type(leaf))
     
+    def get_leaves(self, domain):
+        return self.edges[domain]
 
-    def get_edge(self):
+    def get_edges(self):
         return self.edges
     
     def get_num_edges(self):
