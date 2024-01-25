@@ -52,6 +52,9 @@ def is_valid_hostname(hostname):
 
 
 def get_domain(ip):
+    """
+    Returns the domain/hostname using the IP address
+    """
     if ip != "*":
         try:
             res = socket.gethostbyaddr(ip)

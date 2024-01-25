@@ -36,6 +36,10 @@ def load_mud_profiles(model_dir):
 
 
 def add_to_node(comp, dir, mud_tree, flow):
+    """
+    Add flow to the tree. This adds a new node or adds edges and/or leaves
+    to existing nodes.
+    """
     node_name = dir + " " + comp
     node = mud_tree.get_node(node_name)
     if node is None:
@@ -44,16 +48,10 @@ def add_to_node(comp, dir, mud_tree, flow):
     leaf = Leaf()
     leaf = leaf.set_from_profile(flow)
 
-    if comp == "Local" and dir == "to":
+    if dir == "to":
         domain = get_domain(flow["dstIp"])
         node.add_leaf(leaf, domain)
-    elif comp == "Local" and dir == "from":
-        domain = get_domain(flow["srcIp"])
-        node.add_leaf(leaf, domain)
-    elif comp == "Internet" and dir == "to":
-        domain = get_domain(flow["dstIp"])
-        node.add_leaf(leaf, domain)
-    elif comp == "Internet" and dir == "from":
+    elif dir == "from":
         domain = get_domain(flow["srcIp"])
         node.add_leaf(leaf, domain)
 
@@ -61,18 +59,22 @@ def add_to_node(comp, dir, mud_tree, flow):
 
 
 def generate_mud_tree(device_flows, device_name):
+    """
+    Generates the profile tree from the existing MUD profiles
+    """
     mud_tree = Tree(device_name)
     for flow in device_flows:
         try:
             if flow["srcIp"]!= "*" and ip_address(flow["srcIp"]).is_private:
                 comp = "Local"
                 dir = "from"
+                add_to_node(comp, dir, mud_tree, flow)
                 
-            else:
+            elif flow["srcIp"]!= "*":
+            # else:
                 comp = "Internet"
                 dir = "from"
-            
-            add_to_node(comp, dir, mud_tree, flow)
+                add_to_node(comp, dir, mud_tree, flow)
 
         except ValueError:
             if is_valid_hostname(flow["srcIp"]):
@@ -85,22 +87,23 @@ def generate_mud_tree(device_flows, device_name):
             if flow["dstIp"]!= "*" and ip_address(flow["dstIp"]).is_private:
                 comp = "Local"
                 dir = "to"
+                add_to_node(comp, dir, mud_tree, flow)
 
-            else:
+            elif flow["dstIp"]!= "*":
+            # else:
                 comp = "Internet"
                 dir = "to"
+                add_to_node(comp, dir, mud_tree, flow)
             
-            add_to_node(comp, dir, mud_tree, flow)
-
+            
         except ValueError:
             if is_valid_hostname(flow["dstIp"]):
                 comp = "Internet"
                 dir = "to"
                 add_to_node(comp, dir, mud_tree, flow)
-            
-        leaf = Leaf()
-    
-    print(mud_tree.get_all_nodes())
+                
+    # print(mud_tree.get_all_nodes())
+    mud_tree.print()
     return mud_tree
 
 

@@ -1,6 +1,9 @@
 import json
 class Leaf:
     def __init__(self):
+        """
+        Leaf node of the profile tree consists of the ip flow information
+        """
         self.ethtype = None
         # intiialise src and dest IPs
         self.sip = None
@@ -13,6 +16,7 @@ class Leaf:
     
     def print(self):
         """
+        Print the flow information
         """
         data = {
             'sip' : self.sip,
@@ -20,6 +24,7 @@ class Leaf:
             'sport' : self.sport,
             'dport' : self.dport,
             'ip_proto' : self.proto,
+            'ethType': self.ethtype
         }
         print(json.dumps(data, indent=4))
 
@@ -35,8 +40,12 @@ class Leaf:
         self.dport = flow["dstPort"]
 
         self.proto = flow["ipProto"]
+        self.ethtype = int(flow["ethType"], 16)
         
         return self
 
     def get_flow(self):
-        return (self.sip, self.dip, self.sport, self.dport, self.proto)
+        """
+        Returns a tuple of all the fields of the flow
+        """
+        return (self.sip, self.dip, self.sport, self.dport, self.proto, self.ethtype)
