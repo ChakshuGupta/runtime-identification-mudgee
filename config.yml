@@ -1,0 +1,3 @@
+dir-mud-profiles: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/evaluation/mudgee/result"
+dir-pcaps: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/datasets/captures_IoT_Sentinel/Aria"
+test-device-name: "Aria"

@@ -1,5 +1,6 @@
 import os
 import sys
+import yaml
 
 from ipaddress import ip_address
 
@@ -108,5 +109,8 @@ def generate_mud_tree(device_flows, device_name):
 
 
 if __name__ == "__main__":
-    model_dir = sys.argv[1]
-    load_mud_profiles(model_dir)
+    config = sys.argv[1]
+    with open(config, 'r') as cfgfile:
+        cfg = yaml.load(cfgfile, Loader=yaml.Loader)
+
+    load_mud_profiles(cfg["dir-mud-profiles"])
