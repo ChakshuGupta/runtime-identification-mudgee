@@ -84,22 +84,4 @@ class Flow(object):
     
         return self
 
-
-    def __eq__(self, __value: object) -> bool:
-        """
-        Override equality operator to match flows.
-        """
-        smac_eq = bool(self.smac == __value.smac or __value.smac == "*")
-        dmac_eq = bool(self.dmac == __value.dmac or __value.dmac == "*")
-
-        sip_eq = bool(self.sip == __value.sip or __value.sip == "*")
-        dip_eq = bool(self.dip == __value.dip or __value.dip == "*")
-
-        sport_eq = bool(self.sport == __value.sport or __value.sport == "*")
-        dport_eq = bool(self.dport == __value.dport or __value.dport == "*")
-
-        proto_eq = bool(self.proto == __value.proto or __value.proto == "*")
-
-        return (smac_eq and dmac_eq and sip_eq and dip_eq and\
-                 sport_eq and dport_eq and proto_eq)
     

@@ -42,3 +42,11 @@ class Tree:
         for node in self.nodes:
             self.nodes[node].print()
         print("***************************************************\n")
+
+    def is_empty(self):
+        """
+        Return if the tree has any nodes or not.
+        """
+        if len(self.nodes.keys()) == 0:
+            return True
+        return False
