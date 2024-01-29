@@ -4,36 +4,12 @@ import yaml
 
 from ipaddress import ip_address
 
+from read_pcap import *
 from utils import read_csv, is_valid_hostname, get_domain
+from objects.flow import Flow
 from objects.leaf import Leaf
 from objects.node import Node
 from objects.tree import Tree
-
-
-def load_mud_profiles(model_dir):
-    """
-    Load the MUD profiles generated during the training phase.
-    """
-    mud_profiles = {}
-    for root, dirs, files in os.walk(model_dir):
-        if os.path.samefile(root, model_dir):
-            continue
-        device_name = os.path.basename(root)
-        mud_profiles[device_name] = {}
-        for file in files:
-            # if "rule" in file:
-            #     self.profiles[device_name]["rules"] = read_csv(os.path.join(root, file))
-            if "ipflows" in file:
-                mud_profiles[device_name]["flows"] = generate_mud_tree(
-                                                                read_csv(
-                                                                    os.path.join(root, file)
-                                                                ),
-                                                                device_name
-                                                            )
-            # elif "Mud" in file:
-            #     self.profiles[device_name]["profile"] = read_json(os.path.join(root, file))
-            else:
-                continue
 
 
 def add_to_node(comp, dir, mud_tree, flow):
@@ -50,10 +26,10 @@ def add_to_node(comp, dir, mud_tree, flow):
     leaf = leaf.set_from_profile(flow)
 
     if dir == "to":
-        domain = get_domain(flow["dstIp"])
+        domain = get_domain(flow.dip)
         node.add_leaf(leaf, domain)
     elif dir == "from":
-        domain = get_domain(flow["srcIp"])
+        domain = get_domain(flow.sip)
         node.add_leaf(leaf, domain)
 
     mud_tree.add_node(node)
@@ -66,31 +42,31 @@ def generate_mud_tree(device_flows, device_name):
     mud_tree = Tree(device_name)
     for flow in device_flows:
         try:
-            if flow["srcIp"]!= "*" and ip_address(flow["srcIp"]).is_private:
+            if flow.sip != "*" and ip_address(flow.sip).is_private:
                 comp = "Local"
                 dir = "from"
                 add_to_node(comp, dir, mud_tree, flow)
                 
-            elif flow["srcIp"]!= "*":
+            elif flow.sip!= "*":
             # else:
                 comp = "Internet"
                 dir = "from"
                 add_to_node(comp, dir, mud_tree, flow)
 
         except ValueError:
-            if is_valid_hostname(flow["srcIp"]):
+            if is_valid_hostname(flow.sip):
                 comp = "Internet"
                 dir = "from"
                 add_to_node(comp, dir, mud_tree, flow)
 
         try:
 
-            if flow["dstIp"]!= "*" and ip_address(flow["dstIp"]).is_private:
+            if flow.dip!= "*" and ip_address(flow.dip).is_private:
                 comp = "Local"
                 dir = "to"
                 add_to_node(comp, dir, mud_tree, flow)
 
-            elif flow["dstIp"]!= "*":
+            elif flow.dip!= "*":
             # else:
                 comp = "Internet"
                 dir = "to"
@@ -98,7 +74,7 @@ def generate_mud_tree(device_flows, device_name):
             
             
         except ValueError:
-            if is_valid_hostname(flow["dstIp"]):
+            if is_valid_hostname(flow.dip):
                 comp = "Internet"
                 dir = "to"
                 add_to_node(comp, dir, mud_tree, flow)
@@ -108,9 +84,102 @@ def generate_mud_tree(device_flows, device_name):
     return mud_tree
 
 
+def generate_mud_flows(flows_json):
+    """
+    """
+    flows = []
+    for flow in flows_json:
+        flows.append(Flow().from_profile(flow))
+    return flows
+
+
+def load_mud_profiles(model_dir):
+    """
+    Load the MUD profiles generated during the training phase.
+    """
+    mud_profiles = dict()
+    for root, dirs, files in os.walk(model_dir):
+        if os.path.samefile(root, model_dir):
+            continue
+        device_name = os.path.basename(root)
+        mud_profiles[device_name] = dict()
+        for file in files:
+            # if "rule" in file:
+            #     self.profiles[device_name]["rules"] = read_csv(os.path.join(root, file))
+            if "ipflows" in file:
+                flows = generate_mud_flows(
+                            read_csv(
+                                os.path.join(root, file)
+                                )
+                            )
+                mud_profiles[device_name] = generate_mud_tree( flows, device_name)
+            # elif "Mud" in file:
+            #     self.profiles[device_name]["profile"] = read_json(os.path.join(root, file))
+            else:
+                continue
+    return mud_profiles
+
+
+def compute_similarity_scores(mud_profiles):
+    pass
+
+
+def update_runtime_profile(flows):
+    pass
+
+
+def runtime_profile_generation(input_dir, mud_profiles):
+    """
+    """
+    pcap_list = get_pcaps_from_dir(input_dir)
+    
+    if len(pcap_list) == 0:
+        return None
+    
+    packets = list()
+    for pcap in pcap_list:
+        packets.extend(read_pcap(pcap))
+    
+    # Order read packets using time
+    packets  = sorted(packets, key=lambda ts: ts.time)
+
+    start_time = packets[0].time # time of the first packet
+    end_time = packets[-1].time # time of the last packet
+    epoch_time = 900000 # = 15 minutes
+    in_time = 0 # time passed since the beginning of the epoch
+
+    # print the duration of the packet capture
+    print("\n\n------- Total time: " + str(end_time - start_time) + " -------\n\n")
+
+    flows = dict()
+    # Traverse the packets in the list
+    for packet in packets:
+        # Check if packet has none fields
+        if packet.is_none():
+            continue
+        in_time = packet.time - start_time
+        if in_time > epoch_time:
+            in_time = 0
+            start_time = start_time + epoch_time
+            update_runtime_profile(flows)
+
+            compute_similarity_scores(mud_profiles)
+
+        # Generate a key using packet protocol and a frozen set of source IP and destination IP
+        # Using frozenset to ensure the key is hashable (a requirement for dict keys)
+        key = (packet.proto, frozenset({packet.sip, packet.dip}))
+        # Add a the packet to the flow
+        flows[key] = flows.get(key, Flow()).add(packet)
+
+    return flows
+
+
+
 if __name__ == "__main__":
     config = sys.argv[1]
     with open(config, 'r') as cfgfile:
         cfg = yaml.load(cfgfile, Loader=yaml.Loader)
 
-    load_mud_profiles(cfg["dir-mud-profiles"])
+    mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
+
+    runtime_profile_generation(cfg["dir-pcaps"], mud_profiles)

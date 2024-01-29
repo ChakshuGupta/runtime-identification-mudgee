@@ -1,0 +1,105 @@
+import json
+
+from objects.packet import Packet
+
+class Flow(object):
+
+    def __init__(self):
+        """
+        Initialise an empty packet
+        """
+        # intiialise src and dest IPs
+        self.sip = None
+        self.dip = None
+        # initialise src and dest ports
+        self.sport = None
+        self.dport = None
+        # initialise protocol and ethType
+        self.proto = None
+        self.eth_type = None
+
+        self.packets = list()
+
+    def print(self):
+        """
+        """
+        data = {
+            'sip' : self.sip,
+            'dip' : self.dip,
+            'sport' : self.sport,
+            'dport' : self.dport,
+            'ip_proto' : self.proto,
+            'eth_type': self.eth_type
+        }
+        print(json.dumps(data, indent=4))
+
+    def add(self, pkt):
+        """
+        Add a packet to the flow using IPs and Port numbers
+        """
+
+        if self.sip is not None:
+            if {self.sip, self.dip} != {pkt.sip, pkt.dip} and\
+                  {self.sport, self.dport} != {pkt.sport, pkt.dport}:
+                return
+        # Set endpoints for the flow            
+        elif pkt.sport > pkt.dport:
+            self.sip = pkt.sip
+            self.dip = pkt.dip
+
+            self.sport = pkt.sport
+            self.dport = pkt.dport
+        
+        else:
+            self.sip = pkt.dip
+            self.dip = pkt.sip
+
+            self.sport = pkt.dport
+            self.dport = pkt.sport
+
+        self.proto = pkt.proto
+        self.eth_type = pkt.eth_type
+
+        # Add packet to the flow
+        self.packets.append(pkt)
+
+        return self
+    
+
+    def from_profile(self, flow):
+        """
+        Generate flow from MUD profile
+        """
+        self.sip = flow["srcIp"]
+        self.dip = flow["dstIp"]
+
+        self.sport = flow["srcPort"]
+        self.dport = flow["dstPort"]
+
+        self.proto = flow["ipProto"]
+        if flow["ethType"] != "*":
+            self.eth_type = int(flow["ethType"], 16)
+        else:
+            self.eth_type = flow["ethType"]
+    
+        return self
+
+
+    def __eq__(self, __value: object) -> bool:
+        """
+        Override equality operator to match flows.
+        """
+        smac_eq = bool(self.smac == __value.smac or __value.smac == "*")
+        dmac_eq = bool(self.dmac == __value.dmac or __value.dmac == "*")
+
+        sip_eq = bool(self.sip == __value.sip or __value.sip == "*")
+        dip_eq = bool(self.dip == __value.dip or __value.dip == "*")
+
+        sport_eq = bool(self.sport == __value.sport or __value.sport == "*")
+        dport_eq = bool(self.dport == __value.dport or __value.dport == "*")
+
+        proto_eq = bool(self.proto == __value.proto or __value.proto == "*")
+
+        return (smac_eq and dmac_eq and sip_eq and dip_eq and\
+                 sport_eq and dport_eq and proto_eq)
+    

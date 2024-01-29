@@ -1,10 +1,11 @@
 import json
-class Leaf:
+
+from objects.flow import Flow
+class Leaf(Flow):
     def __init__(self):
         """
         Leaf node of the profile tree consists of the ip flow information
         """
-        self.ethtype = None
         # intiialise src and dest IPs
         self.sip = None
         self.dip = None
@@ -13,39 +14,25 @@ class Leaf:
         self.dport = None
         # initialise protocol
         self.proto = None
-    
-    def print(self):
-        """
-        Print the flow information
-        """
-        data = {
-            'sip' : self.sip,
-            'dip' : self.dip,
-            'sport' : self.sport,
-            'dport' : self.dport,
-            'ip_proto' : self.proto,
-            'ethType': self.ethtype
-        }
-        print(json.dumps(data, indent=4))
-
+        self.eth_type = None
 
     def set_from_profile(self, flow):
         """
         Generate flow from MUD profile
         """
-        self.sip = flow["srcIp"]
-        self.dip = flow["dstIp"]
+        self.sip = flow.sip
+        self.dip = flow.dip
 
-        self.sport = flow["srcPort"]
-        self.dport = flow["dstPort"]
+        self.sport = flow.sport
+        self.dport = flow.dport
 
-        self.proto = flow["ipProto"]
-        self.ethtype = int(flow["ethType"], 16)
+        self.proto = flow.proto
+        self.eth_type = flow.eth_type
         
         return self
 
-    def get_flow(self):
+    def get_leaf(self):
         """
         Returns a tuple of all the fields of the flow
         """
-        return (self.sip, self.dip, self.sport, self.dport, self.proto, self.ethtype)
+        return (self.sip, self.dip, self.sport, self.dport, self.proto, self.eth_type)
