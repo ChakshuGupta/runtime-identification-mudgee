@@ -28,11 +28,24 @@ class Leaf(Flow):
 
         self.proto = flow.proto
         self.eth_type = flow.eth_type
-        
-        return self
 
     def get_leaf(self):
         """
         Returns a tuple of all the fields of the flow
         """
         return (self.sip, self.dip, self.sport, self.dport, self.proto, self.eth_type)
+    
+    def __eq__(self, __value: object) -> bool:
+        """
+        Override equality operator to match flows.
+        """
+        sip_eq = bool(self.sip == __value.sip)
+        dip_eq = bool(self.dip == __value.dip)
+
+        sport_eq = bool(self.sport == __value.sport)
+        dport_eq = bool(self.dport == __value.dport)
+
+        proto_eq = bool(self.proto == __value.proto)
+        # eth_type_eq = bool(self.eth_type == __value.eth_type or __value.eth_type == "*")
+
+        return (sip_eq and dip_eq and sport_eq and dport_eq and proto_eq)

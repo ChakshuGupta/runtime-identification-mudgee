@@ -27,6 +27,8 @@ class Node:
         """
         Return the leaves linked to a particular edge
         """
+        if domain not in self.edges.keys():
+            return None
         return self.edges[domain]
 
     def get_edges(self):
