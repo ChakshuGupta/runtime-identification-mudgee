@@ -4,7 +4,7 @@ import yaml
 
 from read_pcap import *
 from utils import read_csv
-from tree_handling import update_runtime_profile, generate_mud_tree
+from tree_handling import update_runtime_profile, generate_mud_profile_tree
 
 from objects.flow import Flow
 from objects.tree import Tree        
@@ -38,7 +38,7 @@ def load_mud_profiles(model_dir):
                                 os.path.join(root, file)
                                 )
                             )
-                mud_profiles[device_name] = generate_mud_tree( flows, device_name)
+                mud_profiles[device_name] = generate_mud_profile_tree( flows, device_name)
             # elif "Mud" in file:
             #     self.profiles[device_name]["profile"] = read_json(os.path.join(root, file))
             else:

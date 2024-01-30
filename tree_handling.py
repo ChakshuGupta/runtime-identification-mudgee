@@ -71,7 +71,6 @@ def update_runtime_profile(flows, profile_tree):
     if profile_tree.is_empty():
         # generate the initial tree
         for flow in flows:
-            print(flows[flow].sip, flows[flow].dip)
             if ip_address(flows[flow].sip).is_private:
                 comp = "Local"
                 dir = "from"
@@ -91,7 +90,6 @@ def update_runtime_profile(flows, profile_tree):
         profile_tree.print()
     else:
         for flow in flows:
-            print(flows[flow].sip, flows[flow].dip)
             if ip_address(flows[flow].sip).is_private:
                 comp = "Local"
                 dir = "from"
@@ -111,7 +109,7 @@ def update_runtime_profile(flows, profile_tree):
         profile_tree.print()
 
 
-def generate_mud_tree(device_flows, device_name):
+def generate_mud_profile_tree(device_flows, device_name):
     """
     Generates the profile tree from the existing MUD profiles
     """
