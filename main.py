@@ -95,8 +95,7 @@ def runtime_profile_generation(input_dir, mud_profiles, device_name):
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
 
-    return flows
-
+    profile_tree.print()
 
 
 if __name__ == "__main__":

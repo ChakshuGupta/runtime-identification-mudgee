@@ -31,6 +31,14 @@ class Node:
             return None
         return self.edges[domain]
 
+    def get_num_leaves(self):
+        """
+        """
+        num = 0
+        for domain in self.edges:
+            num = num + len(self.edges[domain])
+        return num
+
     def get_edges(self):
         """
         Return the keys of the edges linked to this node

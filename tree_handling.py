@@ -86,8 +86,8 @@ def update_runtime_profile(flows, profile_tree):
                 comp = "Internet"
                 dir = "to"
             add_to_node(comp, dir, profile_tree, flows[flow])
+        print("Number of leaves" + str(profile_tree.get_num_leaves()))
         
-        profile_tree.print()
     else:
         for flow in flows:
             if ip_address(flows[flow].sip).is_private:
@@ -105,8 +105,7 @@ def update_runtime_profile(flows, profile_tree):
                 comp = "Internet"
                 dir = "to"
             update_node(comp, dir, profile_tree, flows[flow])
-        
-        profile_tree.print()
+        print("Number of leaves" + str(profile_tree.get_num_leaves()))
 
 
 def generate_mud_profile_tree(device_flows, device_name):

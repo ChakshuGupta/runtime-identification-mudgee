@@ -33,6 +33,14 @@ class Tree:
         """
         return self.nodes
     
+    def get_num_leaves(self):
+        """
+        """
+        num = 0
+        for node in self.nodes:
+            num = num + self.nodes[node].get_num_leaves()
+        return num
+    
     def print(self):
         """
         Print the profile tree
