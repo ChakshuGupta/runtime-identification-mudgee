@@ -2,12 +2,13 @@ import os
 import sys
 import yaml
 
+from compute import compute_similarity_scores
 from read_pcap import *
-from utils import read_csv
+from utils import read_csv, read_json
 from tree_handling import update_runtime_profile, generate_mud_profile_tree
 
 from objects.flow import Flow
-from objects.tree import Tree        
+from objects.tree import Tree      
 
 
 def generate_flows_from_profile(flows_json):
@@ -38,16 +39,12 @@ def load_mud_profiles(model_dir):
                                 os.path.join(root, file)
                                 )
                             )
-                mud_profiles[device_name] = generate_mud_profile_tree( flows, device_name)
-            # elif "Mud" in file:
-            #     self.profiles[device_name]["profile"] = read_json(os.path.join(root, file))
+                mud_profiles[device_name]["flows"] = generate_mud_profile_tree( flows, device_name)
+            elif "Mud" in file:
+                mud_profiles[device_name]["profiles"] = read_json(os.path.join(root, file))
             else:
                 continue
     return mud_profiles
-
-
-def compute_similarity_scores(mud_profiles):
-    pass
 
 
 def runtime_profile_generation(input_dir, mud_profiles, device_name):
@@ -75,7 +72,7 @@ def runtime_profile_generation(input_dir, mud_profiles, device_name):
     print("\n\n------- Total time: " + str(end_time - start_time) + " -------\n\n")
 
     flows = dict()
-    profile_tree = Tree(device_name)
+    runtime_profile = Tree(device_name)
     # Traverse the packets in the list
     for packet in packets:
         # Check if packet has none fields
@@ -85,9 +82,10 @@ def runtime_profile_generation(input_dir, mud_profiles, device_name):
         if in_time > epoch_time:
             in_time = 0
             start_time = start_time + epoch_time
-            update_runtime_profile(flows, profile_tree)
+            
+            update_runtime_profile(flows, runtime_profile)
 
-            compute_similarity_scores(mud_profiles)
+            dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
 
         # Generate a key using packet protocol and a frozen set of source IP and destination IP
         # Using frozenset to ensure the key is hashable (a requirement for dict keys)
@@ -95,7 +93,7 @@ def runtime_profile_generation(input_dir, mud_profiles, device_name):
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
 
-    profile_tree.print()
+    runtime_profile.print()
 
 
 if __name__ == "__main__":
