@@ -1,12 +1,13 @@
 from ipaddress import ip_address
 
 from utils import get_domain, is_valid_hostname
+from objects.flow import Flow
 from objects.leaf import Leaf
 from objects.node import Node
 from objects.tree import Tree 
 
 
-def add_to_node(comp, dir, profile_tree, flow):
+def add_flow_to_node(comp, dir, profile_tree, flow):
     """
     Add flow to the tree. This adds a new node or adds edges and/or leaves
     to existing nodes.
@@ -49,7 +50,7 @@ def update_node(comp, dir, profile_tree, flow):
     node_name = dir + " " + comp
     node = profile_tree.get_node(node_name)
     if node is None:
-        add_to_node(comp, dir, profile_tree, flow)
+        add_flow_to_node(comp, dir, profile_tree, flow)
 
     if dir == "to":
         domain = get_domain(flow.dip)
@@ -96,7 +97,7 @@ def update_runtime_profile(flows, profile_tree):
             else:
                 comp = "Internet"
                 dir = "from"
-            add_to_node(comp, dir, profile_tree, flows[flow])
+            add_flow_to_node(comp, dir, profile_tree, flows[flow])
 
             if ip_address(flows[flow].dip).is_private:
                 comp = "Local"
@@ -104,8 +105,8 @@ def update_runtime_profile(flows, profile_tree):
             else:
                 comp = "Internet"
                 dir = "to"
-            add_to_node(comp, dir, profile_tree, flows[flow])
-        print("Number of leaves: " + str(profile_tree.get_num_leaves()))
+            add_flow_to_node(comp, dir, profile_tree, flows[flow])
+        print("Number of leaves" + str(profile_tree.get_num_leaves()))
         
     else:
         for flow in flows:
@@ -127,7 +128,7 @@ def update_runtime_profile(flows, profile_tree):
         print("Number of leaves: " + str(profile_tree.get_num_leaves()))
 
 
-def generate_mud_profile_tree(device_flows, device_name):
+def generate_mud_flow_tree(device_flows, device_name):
     """
     Generates the profile tree from the existing MUD profiles
 
@@ -144,40 +145,104 @@ def generate_mud_profile_tree(device_flows, device_name):
             if flow.sip != "*" and ip_address(flow.sip).is_private:
                 comp = "Local"
                 dir = "from"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
                 
             elif flow.sip!= "*":
             # else:
                 comp = "Internet"
                 dir = "from"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
 
         except ValueError:
             if is_valid_hostname(flow.sip):
                 comp = "Internet"
                 dir = "from"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
 
         try:
 
             if flow.dip!= "*" and ip_address(flow.dip).is_private:
                 comp = "Local"
                 dir = "to"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
 
             elif flow.dip!= "*":
             # else:
                 comp = "Internet"
                 dir = "to"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
             
             
         except ValueError:
             if is_valid_hostname(flow.dip):
                 comp = "Internet"
                 dir = "to"
-                add_to_node(comp, dir, mud_tree, flow)
+                add_flow_to_node(comp, dir, mud_tree, flow)
                 
     # print(mud_tree.get_all_nodes())
     mud_tree.print()
     return mud_tree
+
+
+def generate_mud_profile_tree(mud_profile):
+    # Generate new tree object
+    mud_profile_tree = Tree(mud_profile["ietf-mud:mud"]["systeminfo"])
+    print(mud_profile)
+
+    # Get access lists
+    from_device_policy = mud_profile["ietf-mud:mud"]["from-device-policy"]["access-lists"]["access-list"]
+    to_device_policy = mud_profile["ietf-mud:mud"]["to-device-policy"]["access-lists"]["access-list"]
+
+    # Get names of the to and from device policy names
+    from_device_name = from_device_policy[0]["name"] if len(from_device_policy) > 0 else None
+    to_device_name = to_device_policy[0]["name"] if len(to_device_policy) > 0 else None
+    
+    # Get the Access Control List from the MUD profile
+    access_control_list = mud_profile["ietf-access-control-list:access-lists"]["acl"]
+
+    for acl in access_control_list:
+        aces = acl["aces"]["ace"]
+        for ace in aces:
+            flow_local = Flow()
+            flow_internet = Flow()
+            matches = ace["matches"]
+            # if the acl is for "from-device" and "to-internet"
+            if acl["name"] == from_device_name:
+                if "ipv4" in matches:
+                    if "destination-ipv4-network" in matches["ipv4"]:
+                        flow_local.dip = matches["ipv4"]["destination-ipv4-network"] 
+                        flow_internet.sip = matches["ipv4"]["destination-ipv4-network"]
+                    elif "ietf-acldns:dst-dnsname" in matches["ipv4"]:
+                        flow_local.dip = matches["ipv4"]["ietf-acldns:dst-dnsname"] 
+                        flow_internet.sip = matches["ipv4"]["ietf-acldns:dst-dnsname"]
+                    elif "ietf-acldns:src-dnsname" in matches["ipv4"]:
+                        flow_local.dip = matches["ipv4"]["ietf-acldns:src-dnsname"] 
+                        flow_internet.sip = matches["ipv4"]["ietf-acldns:src-dnsname"]
+                    flow_local.proto = matches["ipv4"]["protocol"]
+                    flow_internet.proto = matches["ipv4"]["protocol"]
+                elif "ipv6" in ace:
+                    flow_local.dip = matches["ipv6"]["destination-ipv6-network"]
+                    flow_internet.sip = matches["ipv6"]["destination-ipv6-network"]
+                    flow_local.proto = matches["ipv6"]["protocol"]
+                    flow_internet.proto = matches["ipv6"]["protocol"]
+
+            # if the acl is for "to-device" policy and "from-internet"
+            elif acl["name"] == to_device_name:
+                if "controller" in matches["ietf-mud:mud"]:
+                    flow_local.dip = matches["ietf-mud:mud"]["controller"]
+                    flow_internet.sip = matches["ietf-mud:mud"]["controller"]
+                else:
+                    flow_local.sip = "*"
+                    flow_internet.dip = "*"
+                if "ipv4" in ace:
+                   flow_local.proto = ace["ipv4"]["protocol"]
+                   flow_internet.proto = ace["ipv4"]["protocol"]
+                elif "ipv6" in ace:
+                   flow_local.proto = ace["ipv6"]["protocol"]
+                   flow_internet.proto = ace["ipv6"]["protocol"]
+
+            else:
+                print("ERROR! Unknown policy type")
+
+
+    return mud_profile_tree

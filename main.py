@@ -5,7 +5,11 @@ import yaml
 from compute import compute_similarity_scores
 from read_pcap import *
 from utils import read_csv, read_json
+<<<<<<< Updated upstream
 from tree_handling import update_runtime_profile, generate_mud_profile_tree
+=======
+from tree_handling import update_runtime_profile, generate_mud_profile_tree, generate_mud_flow_tree
+>>>>>>> Stashed changes
 
 from objects.flow import Flow
 from objects.tree import Tree      
@@ -39,9 +43,13 @@ def load_mud_profiles(model_dir):
                                 os.path.join(root, file)
                                 )
                             )
-                mud_profiles[device_name]["flows"] = generate_mud_profile_tree( flows, device_name)
+                mud_profiles[device_name]["flows"] = generate_mud_flow_tree(flows, device_name)
             elif "Mud" in file:
-                mud_profiles[device_name]["profiles"] = read_json(os.path.join(root, file))
+                mud_profiles[device_name]["profile"] = generate_mud_profile_tree(
+                                                                read_json(
+                                                                    os.path.join(root, file)
+                                                                    )
+                                                                )
             else:
                 continue
     return mud_profiles
@@ -103,4 +111,4 @@ if __name__ == "__main__":
 
     mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
 
-    runtime_profile_generation(cfg["dir-pcaps"], mud_profiles, cfg["device-name"])
+    # runtime_profile_generation(cfg["dir-pcaps"], mud_profiles, cfg["device-name"])
