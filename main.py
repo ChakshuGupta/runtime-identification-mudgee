@@ -5,11 +5,7 @@ import yaml
 from compute import compute_similarity_scores
 from read_pcap import *
 from utils import read_csv, read_json
-<<<<<<< Updated upstream
-from tree_handling import update_runtime_profile, generate_mud_profile_tree
-=======
 from tree_handling import update_runtime_profile, generate_mud_profile_tree, generate_mud_flow_tree
->>>>>>> Stashed changes
 
 from objects.flow import Flow
 from objects.tree import Tree      
