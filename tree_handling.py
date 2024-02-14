@@ -190,6 +190,54 @@ def update_runtime_profile(flows, profile_tree):
 #     mud_tree.print()
 #     return mud_tree
 
+def add_ace_to_flow(flow_local, flow_internet, ace_matches):
+    """
+    Add the access control list to the flow
+    """
+    for match_key in ace_matches.keys():
+        if "ipv" in match_key:
+            net_keys = ace_matches[match_key].keys()
+
+            for key in net_keys:
+                if "source" in key:
+                    flow_local.sip = ace_matches[match_key][key]
+                    flow_internet.sip = ace_matches[match_key][key]
+                elif "destination" in key:
+                    flow_local.dip = ace_matches[match_key][key]
+                    flow_internet.dip = ace_matches[match_key][key]
+                elif "dst-dnsname" in key:
+                    flow_local.dip = ace_matches[match_key][key]
+                    flow_internet.dip = ace_matches[match_key][key]
+                elif "src-dnsname" in key:
+                    flow_local.sip = ace_matches[match_key][key]
+                    flow_internet.sip = ace_matches[match_key][key]
+                elif key == "protocol":
+                    flow_local.proto = ace_matches[match_key][key]
+                    flow_internet.proto = ace_matches[match_key][key]
+        
+        elif match_key == "ietf-mud:mud" and "controller" in ace_matches[match_key]:
+                flow_local.dip = ace_matches[match_key]["controller"]
+
+        elif match_key == "tcp":
+            if "destination-port" in ace_matches[match_key]:
+                flow_local.dport = ace_matches[match_key]["destination-port"]["port"]
+                flow_internet.dport = ace_matches[match_key]["destination-port"]["port"]
+            elif "source-port" in ace_matches[match_key]:
+                flow_local.sport = ace_matches[match_key]["source-port"]["port"]
+                flow_internet.sport = ace_matches[match_key]["source-port"]["port"]
+        
+        elif match_key == "udp":
+            if "destination-port" in ace_matches[match_key]:
+                flow_local.dport = ace_matches[match_key]["destination-port"]["port"]
+                flow_internet.dport = ace_matches[match_key]["destination-port"]["port"]
+            elif "source-port" in ace_matches[match_key]:
+                flow_local.sport = ace_matches[match_key]["source-port"]["port"]
+                flow_internet.sport = ace_matches[match_key]["source-port"]["port"]
+        
+        elif match_key == "eth":
+            flow_local.eth_type = int(ace_matches[match_key]["ethertype"], 16)
+            flow_internet.eth_type = int(ace_matches[match_key]["ethertype"], 16)
+
 
 def generate_mud_profile_tree(mud_profile):
     # Generate new tree object
@@ -214,41 +262,8 @@ def generate_mud_profile_tree(mud_profile):
             matches = ace["matches"]
             # if the acl is for "from-device" and "to-internet"
             if acl["name"] == from_device_name:
-                for match_key in matches.keys():
-                    if "ipv" in match_key:
-                        net_keys = matches[match_key].keys()
-
-                        for key in net_keys:
-                            if "destination" in key:
-                                flow_local.dip = matches[match_key][key]
-                                flow_internet.dip = matches[match_key][key]
-                            elif "dst-dnsname" in key:
-                                flow_local.dip = matches[match_key][key]
-                                flow_internet.dip = matches[match_key][key]
-                            elif "src-dnsname" in key:
-                                flow_local.sip = matches[match_key][key]
-                                flow_internet.sip = matches[match_key][key]
-                            elif key == "protocol":
-                                flow_local.proto = matches[match_key][key]
-                                flow_internet.proto = matches[match_key][key]
-
-                    elif match_key == "tcp":
-                        if "destination-port" in matches[match_key]:
-                            flow_local.dport = matches[match_key]["destination-port"]["port"]
-                            flow_internet.dport = matches[match_key]["destination-port"]["port"]
-                        elif "source-port" in matches[match_key]:
-                            flow_local.sport = matches[match_key]["source-port"]["port"]
-                            flow_internet.sport = matches[match_key]["source-port"]["port"]
-                    elif match_key == "udp":
-                        if "destination-port" in matches[match_key]:
-                            flow_local.dport = matches[match_key]["destination-port"]["port"]
-                            flow_internet.dport = matches[match_key]["destination-port"]["port"]
-                        elif "source-port" in matches[match_key]:
-                            flow_local.sport = matches[match_key]["source-port"]["port"]
-                            flow_internet.sport = matches[match_key]["source-port"]["port"]
-                    elif match_key == "eth":
-                        flow_local.eth_type = int(matches[match_key]["ethertype"], 16)
-                        flow_internet.eth_type = int(matches[match_key]["ethertype"], 16)
+                
+                add_ace_to_flow(flow_local, flow_internet, matches)
                 
                 if flow_local.sip != None:
                     add_to_node("Local", "from", mud_profile_tree, flow_local, "mud")
@@ -258,43 +273,8 @@ def generate_mud_profile_tree(mud_profile):
 
             # if the acl is for "to-device" policy and "from-internet"
             elif acl["name"] == to_device_name:
-                for match_key in matches.keys():
-                    if "ipv" in match_key:
-                        net_keys = matches[match_key].keys()
-                        for key in net_keys:
-                            if "source" in key:
-                                flow_local.sip = matches[match_key][key]
-                                flow_internet.sip = matches[match_key][key]
-                            elif "dst-dnsname" in key:
-                                flow_local.dip = matches[match_key][key]
-                                flow_internet.dip = matches[match_key][key]
-                            elif "src-dnsname" in key:
-                                flow_local.sip = matches[match_key][key]
-                                flow_internet.sip = matches[match_key][key]
-                            elif key == "protocol":
-                                flow_local.proto = matches[match_key][key]
-                                flow_internet.proto = matches[match_key][key]
-
-                    elif match_key == "ietf-mud:mud" and "controller" in matches[match_key]:
-                                flow_local.dip = matches[match_key]["controller"]
-                                # flow_internet.dip = matches[match_key]["controller"]
-                    elif match_key == "tcp":
-                        if "destination-port" in matches[match_key]:
-                            flow_local.sport = matches[match_key]["destination-port"]["port"]
-                            flow_internet.sport = matches[match_key]["destination-port"]["port"]
-                        elif "source-port" in matches[match_key]:
-                            flow_local.dport = matches[match_key]["source-port"]["port"]
-                            flow_internet.dport = matches[match_key]["source-port"]["port"]
-                    elif match_key == "udp":
-                        if "destination-port" in matches[match_key]:
-                            flow_local.sport = matches[match_key]["destination-port"]["port"]
-                            flow_internet.sport = matches[match_key]["destination-port"]["port"]
-                        elif "source-port" in matches[match_key]:
-                            flow_local.dport = matches[match_key]["source-port"]["port"]
-                            flow_internet.dport = matches[match_key]["source-port"]["port"]
-                    elif match_key == "eth":
-                        flow_local.eth_type = int(matches[match_key]["ethertype"], 16)
-                        flow_internet.eth_type = int(matches[match_key]["ethertype"], 16)
+                
+                add_ace_to_flow(flow_local, flow_internet, matches)
                 
                 if flow_local.dip != None:
                     add_to_node("Local", "to", mud_profile_tree, flow_local, "mud")
