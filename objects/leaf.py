@@ -20,14 +20,14 @@ class Leaf(Flow):
         """
         Generate flow from MUD profile
         """
-        self.sip = flow.sip
-        self.dip = flow.dip
+        self.sip = flow.sip if flow.sip is not None else "*"
+        self.dip = flow.dip if flow.dip is not None else "*"
 
-        self.sport = flow.sport
-        self.dport = flow.dport
+        self.sport = flow.sport if flow.sport is not None else "*"
+        self.dport = flow.dport if flow.dport is not None else "*"
 
-        self.proto = flow.proto
-        self.eth_type = flow.eth_type
+        self.proto = flow.proto if flow.proto is not None else "*"
+        self.eth_type = flow.eth_type if flow.eth_type is not None else "*"
 
     def get_leaf(self):
         """

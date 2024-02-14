@@ -5,7 +5,7 @@ import yaml
 from compute import compute_similarity_scores
 from pcap_handling import *
 from utils import read_csv, read_json
-from tree_handling import update_runtime_profile, generate_mud_profile_tree, generate_mud_flow_tree
+from tree_handling import update_runtime_profile, generate_mud_profile_tree
 
 from objects.flow import Flow
 from objects.tree import Tree      
@@ -31,16 +31,14 @@ def load_mud_profiles(model_dir):
         device_name = os.path.basename(root)
         mud_profiles[device_name] = dict()
         for file in files:
-            # if "rule" in file:
-            #     self.profiles[device_name]["rules"] = read_csv(os.path.join(root, file))
-            if "ipflows" in file:
-                flows = generate_flows_from_profile(
-                            read_csv(
-                                os.path.join(root, file)
-                                )
-                            )
-                mud_profiles[device_name]["flows"] = generate_mud_flow_tree(flows, device_name)
-            elif "Mud" in file:
+            # if "ipflows" in file:
+            #     flows = generate_flows_from_profile(
+            #                 read_csv(
+            #                     os.path.join(root, file)
+            #                     )
+            #                 )
+            #     mud_profiles[device_name]["flows"] = generate_mud_flow_tree(flows, device_name)
+            if "Mud" in file:
                 mud_profiles[device_name]["profile"] = generate_mud_profile_tree(
                                                                 read_json(
                                                                     os.path.join(root, file)

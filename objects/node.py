@@ -57,9 +57,9 @@ class Node:
         """
         print("##### Node:" + self.dir + " " + self.comp)
         for edge in self.edges:
-            print("## Edge:" + edge)
+            print("## Edge:", edge)
             num = 0
             for leaf in self.edges[edge]:
-                print("# Leaf " + str(num))
+                print("# Leaf:", num)
                 leaf.print()
                 num = num + 1
