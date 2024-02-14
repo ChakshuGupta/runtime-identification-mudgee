@@ -1,5 +1,5 @@
 device-name: "D-LinkCam"
 
-dir-mud-profiles: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/evaluation/mudgee/result"
+dir-mud-profiles: "/home/padfoot/projects/iot-eval-framework/evaluation/mudgee/result"
 
-dir-pcaps: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/datasets/captures_IoT_Sentinel/D-LinkCam"
+dir-pcaps: "/home/padfoot/projects/iot-eval-framework/datasets/captures_IoT_Sentinel/D-LinkCam"

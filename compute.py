@@ -40,7 +40,7 @@ def compute_static_similarity(mud_profile, runtime_profile):
     """
     score = 0
 
-    matches = get_intersection(mud_profile, runtime_profile)
+    matches = find_intersection(mud_profile, runtime_profile)
     num_leaves = mud_profile["flows"].get_num_leaves()
 
     score = len(matches) / num_leaves
@@ -48,7 +48,7 @@ def compute_static_similarity(mud_profile, runtime_profile):
     return score
 
 
-def get_intersection(mud_profile, runtime_profile):
+def find_intersection(mud_profile, runtime_profile):
     """
     """
     matches = []
