@@ -105,4 +105,4 @@ if __name__ == "__main__":
 
     mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
 
-    # runtime_profile_generation(cfg["dir-pcaps"], mud_profiles, cfg["device-name"])
+    runtime_profile_generation(cfg["dir-pcaps"], mud_profiles, cfg["device-name"])

@@ -240,6 +240,15 @@ def add_ace_to_flow(flow_local, flow_internet, ace_matches):
 
 
 def generate_mud_profile_tree(mud_profile):
+    """
+    Generate the tree structure using the MUD profiles.
+
+    [Args]:
+    mud_profile: MUD profile of the device read in the JSON format
+
+    [Returns]:
+    mud_profile_tree
+    """
     # Generate new tree object
     mud_profile_tree = Tree(mud_profile["ietf-mud:mud"]["systeminfo"])
 

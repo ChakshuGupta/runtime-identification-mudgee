@@ -1,8 +1,17 @@
 import csv
+import ipaddress
 import json
 import os
 import re
 import socket
+
+
+IP_TYPES = {
+    0: "Domain",
+    1: "IPv4",
+    2: "IPv6",
+    3: "Subnet"
+}
 
 
 def read_csv(filepath):
@@ -51,17 +60,47 @@ def is_valid_hostname(hostname):
     return all(allowed.match(x) for x in hostname.split("."))
 
 
-def get_domain(ip):
+def get_domain(ip_address):
     """
     Returns the domain/hostname using the IP address
     """
-    if ip != "*":
+    if ip_address != "*":
         try:
-            res = socket.gethostbyaddr(ip)
+            res = socket.gethostbyaddr(ip_address)
             domain = res[0]
         except:
-            domain = ip
+            domain = ip_address
     else:
         domain = "*"
     
     return domain
+
+def get_ip_from_domain(domain):
+    """
+    """
+    try:
+        return socket.gethostbyname(domain)
+    except:
+        return domain
+
+
+def get_ip_type(ip_address):
+    """
+    """
+    try:
+        if "/" not in ip_address:
+            return IP_TYPES[1] if type(ipaddress.ip_address(ip_address)) is ipaddress.IPv4Address else IP_TYPES[2]
+        else:
+            return IP_TYPES[3]
+    except ValueError:
+        return IP_TYPES[0]
+    
+
+def is_ip_in_subnet(ip_address, subnet_address):
+    """
+    """
+    for address in ipaddress.ip_network(subnet_address):
+        if address == ip_address:
+            return True
+
+    return False
