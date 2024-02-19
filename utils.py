@@ -5,14 +5,7 @@ import os
 import re
 import socket
 
-
-IP_TYPES = {
-    0: "Domain",
-    1: "IPv4",
-    2: "IPv6",
-    3: "Subnet"
-}
-
+from constants import IP_TYPES
 
 def read_csv(filepath):
     """

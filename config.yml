@@ -1,5 +1,6 @@
 device-name: "D-LinkCam"
+default-gateway-ip: "10.10.10.1"
 
-dir-mud-profiles: "/home/padfoot/projects/iot-eval-framework/evaluation/mudgee/result"
+dir-mud-profiles: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/evaluation/mudgee/result"
 
-dir-pcaps: "/home/padfoot/projects/iot-eval-framework/datasets/captures_IoT_Sentinel/D-LinkCam"
+dir-pcaps: "/home/chakshu/Documents/projects/iot_security/iot-eval-framework/datasets/captures_IoT_Sentinel/D-LinkCam"

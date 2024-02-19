@@ -1,11 +1,14 @@
-from collections import OrderedDict
-from ipaddress import ip_address
 import socket
 
+from collections import OrderedDict
+# from ipaddress import ip_address
+
+from constants import IP_TYPES
 from objects.leaf import Leaf
 from objects.node import Node
 from objects.tree import Tree
-from utils import get_ip_type, get_domain, get_ip_from_domain, is_ip_in_subnet, IP_TYPES
+
+from utils import get_ip_type, get_domain, get_ip_from_domain, is_ip_in_subnet
 
 def compute_similarity_scores(mud_profiles, runtime_profile):
     """
@@ -15,9 +18,9 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
 
     for device in mud_profiles:
         print("\n Checking device: ", device)
-        matches = find_intersection(mud_profiles[device]["profile"], runtime_profile)
+        matches = find_intersection(mud_profiles[device], runtime_profile)
         dynamic_scores[device] = compute_dynamic_similarity(matches, runtime_profile)
-        static_scores[device] = compute_static_similarity(matches, mud_profiles[device]["profile"])
+        static_scores[device] = compute_static_similarity(matches, mud_profiles[device])
     
     dynamic_scores = OrderedDict(reversed(list(dynamic_scores.items())))
     static_scores = OrderedDict(reversed(list(static_scores.items())))

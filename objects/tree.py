@@ -2,11 +2,12 @@ from objects.node import Node
 
 class Tree:
 
-    def __init__(self, device_name):
+    def __init__(self, device_name, default_gateway="127.0.0.1"):
         """
         Generate the device profile tree
         """
         self.device_name = device_name
+        self.default_gateway = default_gateway
         # nodes are stored as a dict with node name as the key.
         # node name is the combination of the direction of 
         self.nodes = {}

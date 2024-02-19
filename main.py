@@ -29,17 +29,10 @@ def load_mud_profiles(model_dir):
         if os.path.samefile(root, model_dir):
             continue
         device_name = os.path.basename(root)
-        mud_profiles[device_name] = dict()
+        # mud_profiles[device_name] = dict()
         for file in files:
-            # if "ipflows" in file:
-            #     flows = generate_flows_from_profile(
-            #                 read_csv(
-            #                     os.path.join(root, file)
-            #                     )
-            #                 )
-            #     mud_profiles[device_name]["flows"] = generate_mud_flow_tree(flows, device_name)
             if "Mud" in file:
-                mud_profiles[device_name]["profile"] = generate_mud_profile_tree(
+                mud_profiles[device_name] = generate_mud_profile_tree(
                                                                 read_json(
                                                                     os.path.join(root, file)
                                                                     )
@@ -49,11 +42,11 @@ def load_mud_profiles(model_dir):
     return mud_profiles
 
 
-def runtime_profile_generation(input_dir, mud_profiles, device_name):
+def runtime_profile_generation(config, mud_profiles):
     """
     Generate the runtime profile from the input packets
     """
-    pcap_list = get_pcaps_from_dir(input_dir)
+    pcap_list = get_pcaps_from_dir(config["dir-pcaps"])
     
     if len(pcap_list) == 0:
         return None
@@ -74,7 +67,7 @@ def runtime_profile_generation(input_dir, mud_profiles, device_name):
     print("\n\n------- Total time: " + str(end_time - start_time) + " -------\n\n")
 
     flows = dict()
-    runtime_profile = Tree(device_name)
+    runtime_profile = Tree(config["device-name"], config["default-gateway-ip"])
     # Traverse the packets in the list
     for packet in packets:
         # Check if packet has none fields
@@ -105,4 +98,4 @@ if __name__ == "__main__":
 
     mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
 
-    runtime_profile_generation(cfg["dir-pcaps"], mud_profiles, cfg["device-name"])
+    runtime_profile_generation(cfg, mud_profiles)

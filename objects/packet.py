@@ -1,10 +1,5 @@
 from scapy.all import *
-
-PROTOCOLS = {
-    6  : 'TCP',
-    17 : 'UDP'
-}
-
+from constants import PROTOCOLS
 class Packet(object):
 
     
