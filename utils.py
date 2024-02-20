@@ -53,32 +53,53 @@ def is_valid_hostname(hostname):
     return all(allowed.match(x) for x in hostname.split("."))
 
 
-def get_domain(ip_address):
+def get_hostname(ip_address):
     """
-    Returns the domain/hostname using the IP address
+    Returns the hostname using the IP address
+
+    [Args]
+    ip_address
+
+    [Returns]
+    host
     """
     if ip_address != "*":
         try:
             res = socket.gethostbyaddr(ip_address)
-            domain = res[0]
+            host = res[0]
         except:
-            domain = ip_address
+            host = ip_address
     else:
-        domain = "*"
+        host = "*"
     
-    return domain
+    return host
 
 def get_ip_from_domain(domain):
     """
+    Returns IP corresponding to the input domain
+
+    [Args]
+    domain
+
+    [Returns]
+    ip address
     """
     try:
         return socket.gethostbyname(domain)
     except:
+        # if the corresponding IP does not exist, return the domain itself
         return domain
 
 
 def get_ip_type(ip_address):
     """
+    Identify the type of input in the profile (IPv4/IPv6/Domain/Subnet)
+
+    [Args]
+    ip_address
+
+    [Returns]
+    IP Type
     """
     try:
         if "/" not in ip_address:
@@ -91,6 +112,14 @@ def get_ip_type(ip_address):
 
 def is_ip_in_subnet(ip_address, subnet_address):
     """
+    Check if the IP address is part of the given sub-network address
+
+    [Args]
+    ip_address
+    subnet_address
+
+    [Returns]
+    True/False
     """
     for address in ipaddress.ip_network(subnet_address):
         if address == ip_address:

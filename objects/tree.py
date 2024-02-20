@@ -36,6 +36,7 @@ class Tree:
     
     def get_num_leaves(self):
         """
+        Computes the total number of leaves in the tree and returns the number.
         """
         num = 0
         for node in self.nodes:
