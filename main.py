@@ -96,11 +96,11 @@ def runtime_profile_generation(config, mud_profiles):
 
             if dynamic_scores[-1][1] == 1:
                 print("Match Found!", dynamic_scores[-1][0])
-                device_matched = (dynamic_scores[-1])
+                device_matched = (dynamic_scores[-1], static_scores[-1])
                 break
             elif static_scores[-1][1] == 1:
                 print("Match Found!", static_scores[-1][0])
-                device_matched = (static_scores[-1])
+                device_matched = (dynamic_scores[-1], static_scores[-1])
                 break
 
 
@@ -110,7 +110,7 @@ def runtime_profile_generation(config, mud_profiles):
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
     
-    device_matched = dynamic_scores[-1]
+    device_matched = (dynamic_scores[-1],static_scores[-1])
 
     runtime_profile.print()
     return device_matched
