@@ -1,6 +1,7 @@
 import json
 
 from objects.flow import Flow
+
 class Leaf(Flow):
     def __init__(self):
         """

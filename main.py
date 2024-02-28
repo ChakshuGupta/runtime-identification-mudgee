@@ -4,7 +4,7 @@ import yaml
 
 from compute import compute_similarity_scores
 from pcap_handling import *
-from utils import read_csv, read_json
+from utils import read_json
 from tree_handling import update_runtime_profile, generate_mud_profile_tree
 
 from objects.flow import Flow
@@ -81,6 +81,9 @@ def runtime_profile_generation(config, mud_profiles):
             update_runtime_profile(flows, runtime_profile)
 
             dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
+            print("Highest dynamic score : ", dynamic_scores[-1])
+            print("Highest static score : ", static_scores[-1])
+
 
         # Generate a key using packet protocol and a frozen set of source IP and destination IP
         # Using frozenset to ensure the key is hashable (a requirement for dict keys)

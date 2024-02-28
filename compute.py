@@ -1,7 +1,3 @@
-import socket
-
-from collections import OrderedDict
-
 from constants import IP_TYPES
 from objects.leaf import Leaf
 from objects.node import Node
@@ -33,8 +29,8 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
         dynamic_scores[device] = compute_dynamic_similarity(matches, runtime_profile)
         static_scores[device] = compute_static_similarity(matches, mud_profiles[device])
     
-    dynamic_scores = OrderedDict(reversed(list(dynamic_scores.items())))
-    static_scores = OrderedDict(reversed(list(static_scores.items())))
+    dynamic_scores = sorted(dynamic_scores.items(), key=lambda item: item[1])
+    static_scores = sorted(static_scores.items(), key=lambda item: item[1])
 
     return dynamic_scores, static_scores
 
