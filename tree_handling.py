@@ -146,7 +146,7 @@ def update_runtime_profile(flows, profile_tree):
                 comp = "Internet"
                 dir = "to"
             add_to_node(comp, dir, profile_tree, flows[flow], "runtime")
-        print("Number of leaves" + str(profile_tree.get_num_leaves()))
+        # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
         
     else:
         for flow in flows:
@@ -165,7 +165,7 @@ def update_runtime_profile(flows, profile_tree):
                 comp = "Internet"
                 dir = "to"
             update_node(comp, dir, profile_tree, flows[flow])
-        print("Number of leaves: " + str(profile_tree.get_num_leaves()))
+        # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
 
 
 def add_ace_to_flow(flow_local, flow_internet, ace_matches):

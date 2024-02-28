@@ -57,7 +57,8 @@ def runtime_profile_generation(config, mud_profiles):
     
     # Order read packets using time
     packets  = sorted(packets, key=lambda ts: ts.time)
-
+    
+    # initialise time values
     start_time = packets[0].time # time of the first packet
     end_time = packets[-1].time # time of the last packet
     epoch_time = 900000 # = 15 minutes
@@ -68,13 +69,22 @@ def runtime_profile_generation(config, mud_profiles):
 
     flows = dict()
     runtime_profile = Tree(config["device-name"], config["default-gateway-ip"])
+
+    device_matched = ""
     # Traverse the packets in the list
     for packet in packets:
         # Check if packet has none fields
         if packet.is_none():
             continue
+        
+        # get the time passed since start of the epoch
         in_time = packet.time - start_time
+        
         if in_time > epoch_time:
+            # if the time pass has crossed epoch compute similarity scores
+            # it is not ">=", since we still want to add packets to the flows till 
+            # we are reach the epoch
+
             in_time = 0
             start_time = start_time + epoch_time
             
@@ -84,14 +94,26 @@ def runtime_profile_generation(config, mud_profiles):
             print("Highest dynamic score : ", dynamic_scores[-1])
             print("Highest static score : ", static_scores[-1])
 
+            if dynamic_scores[-1][1] == 1:
+                print("Match Found!", dynamic_scores[-1][0])
+                device_matched = (dynamic_scores[-1])
+                break
+            elif static_scores[-1][1] == 1:
+                print("Match Found!", static_scores[-1][0])
+                device_matched = (static_scores[-1])
+                break
+
 
         # Generate a key using packet protocol and a frozen set of source IP and destination IP
         # Using frozenset to ensure the key is hashable (a requirement for dict keys)
-        key = (packet.proto, frozenset({packet.sip, packet.dip}))
+        key = (packet.proto, frozenset({packet.sip, packet.dip, packet.sport, packet.dport}))
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
+    
+    device_matched = dynamic_scores[-1]
 
     runtime_profile.print()
+    return device_matched
 
 
 if __name__ == "__main__":
@@ -101,4 +123,5 @@ if __name__ == "__main__":
 
     mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
 
-    runtime_profile_generation(cfg, mud_profiles)
+    device_matched = runtime_profile_generation(cfg, mud_profiles)
+    print("Device ", cfg["device-name"], " matched to --- ", device_matched)

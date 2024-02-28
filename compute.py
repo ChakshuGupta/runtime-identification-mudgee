@@ -53,7 +53,7 @@ def compute_dynamic_similarity(matches, runtime_profile):
     num_leaves = runtime_profile.get_num_leaves()
     score = len(matches) / num_leaves
 
-    print("Dynamic score: ", score)
+    # print("Dynamic score: ", score)
 
     return score
 
@@ -74,7 +74,7 @@ def compute_static_similarity(matches, mud_profile):
     num_leaves = mud_profile.get_num_leaves()
     score = len(matches) / num_leaves
 
-    print("Static score: ", score)
+    # print("Static score: ", score)
     
     return score
 
