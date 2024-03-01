@@ -5,7 +5,7 @@ import os
 import re
 import socket
 
-from constants import IP_TYPES
+from src.constants import IP_TYPES
 
 def read_csv(filepath):
     """

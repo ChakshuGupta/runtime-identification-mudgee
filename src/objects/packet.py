@@ -1,5 +1,7 @@
 from scapy.all import *
-from constants import PROTOCOLS
+
+from src.constants import PROTOCOLS
+
 class Packet(object):
 
     
@@ -8,9 +10,6 @@ class Packet(object):
         Initialise an empty packet and extract the fields from the pkt
         if its not None.
         """
-        # initialise src and dest MACs
-        self.smac = None
-        self.dmac = None
         # intiialise src and dest IPs
         self.sip = None
         self.dip = None
@@ -37,10 +36,6 @@ class Packet(object):
         [Arg]
         pkt: scapy packet
         """
-        # MAC Addresses
-        self.smac = pkt.src
-        self.dmac = pkt.dst
-
         self.eth_type = self.get_eth_type(pkt)
 
         self.sip = pkt['IP'].src if pkt.haslayer('IP') else None

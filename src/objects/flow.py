@@ -1,6 +1,6 @@
 import json
 
-from objects.packet import Packet
+from src.objects.packet import Packet
 
 class Flow(object):
 
@@ -64,24 +64,4 @@ class Flow(object):
         self.packets.append(pkt)
 
         return self
-    
-
-    def from_profile(self, flow):
-        """
-        Generate flow from MUD profile
-        """
-        self.sip = flow["srcIp"]
-        self.dip = flow["dstIp"]
-
-        self.sport = flow["srcPort"]
-        self.dport = flow["dstPort"]
-
-        self.proto = flow["ipProto"]
-        if flow["ethType"] != "*":
-            self.eth_type = int(flow["ethType"], 16)
-        else:
-            self.eth_type = flow["ethType"]
-    
-        return self
-
     

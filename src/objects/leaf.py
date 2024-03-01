@@ -1,6 +1,4 @@
-import json
-
-from objects.flow import Flow
+from src.objects.flow import Flow
 
 class Leaf(Flow):
     def __init__(self):
@@ -15,7 +13,7 @@ class Leaf(Flow):
         self.dport = None
         # initialise protocol
         self.proto = None
-        self.eth_type = None
+
 
     def set_from_profile(self, flow):
         """
@@ -28,13 +26,12 @@ class Leaf(Flow):
         self.dport = flow.dport if flow.dport is not None else "*"
 
         self.proto = flow.proto if flow.proto is not None else "*"
-        self.eth_type = flow.eth_type if flow.eth_type is not None else "*"
 
     def get_leaf(self):
         """
         Returns a tuple of all the fields of the flow
         """
-        return (self.sip, self.dip, self.sport, self.dport, self.proto, self.eth_type)
+        return (self.sip, self.dip, self.sport, self.dport, self.proto)
     
     def __eq__(self, __value: object) -> bool:
         """
@@ -47,6 +44,5 @@ class Leaf(Flow):
         dport_eq = bool(self.dport == __value.dport)
 
         proto_eq = bool(self.proto == __value.proto)
-        # eth_type_eq = bool(self.eth_type == __value.eth_type or __value.eth_type == "*")
 
         return (sip_eq and dip_eq and sport_eq and dport_eq and proto_eq)

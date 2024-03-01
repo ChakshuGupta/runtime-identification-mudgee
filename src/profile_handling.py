@@ -1,12 +1,12 @@
 import os
 
-from compute import compute_similarity_scores
-from pcap_handling import *
-from utils import read_json
-from tree_handling import update_runtime_profile, generate_mud_profile_tree
-
-from objects.flow import Flow
-from objects.tree import Tree     
+from src.compute import compute_similarity_scores
+from src.objects.flow import Flow
+from src.objects.tree import Tree  
+from src.pcap_handling import *
+from src.tree_handling import update_runtime_profile, generate_mud_profile_tree
+from src.utils import read_json
+   
 
 
 def generate_flows_from_profile(flows_json):
@@ -46,7 +46,10 @@ def runtime_profile_generation(config, mud_profiles):
     """
     pcap_list = get_pcaps_from_dir(config["dir-pcaps"])
     
-    if len(pcap_list) == 0:
+    if pcap_list is None or len(pcap_list) == 0:
+        return None
+    
+    if mud_profiles is None or len(mud_profiles) == 0:
         return None
     
     packets = list()
@@ -107,8 +110,12 @@ def runtime_profile_generation(config, mud_profiles):
         key = (packet.proto, frozenset({packet.sip, packet.dip, packet.sport, packet.dport}))
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
-    
-    device_matched = (dynamic_scores[-1],static_scores[-1])
+    if dynamic_scores is None:
+        dynamic_scores = (None, 0)
+    if static_scores is None:
+        static_scores = (None, 0)
+
+    device_matched = (dynamic_scores[-1], static_scores[-1])
 
     runtime_profile.print()
     return device_matched

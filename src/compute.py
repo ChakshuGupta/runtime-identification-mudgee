@@ -1,9 +1,9 @@
-from constants import IP_TYPES
-from objects.leaf import Leaf
-from objects.node import Node
-from objects.tree import Tree
+from src.constants import IP_TYPES
+from src.objects.leaf import Leaf
+from src.objects.node import Node
+from src.objects.tree import Tree
 
-from utils import get_ip_type, get_hostname, get_ip_from_domain, is_ip_in_subnet
+from src.utils import get_ip_type, get_hostname, get_ip_from_domain, is_ip_in_subnet
 
 def compute_similarity_scores(mud_profiles, runtime_profile):
     """
@@ -26,8 +26,8 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
         matches = find_intersection(mud_profiles[device], runtime_profile)
 
         # compute the similarity scores
-        dynamic_scores[device] = compute_dynamic_similarity(matches, runtime_profile)
-        static_scores[device] = compute_static_similarity(matches, mud_profiles[device])
+        dynamic_scores[device] = compute_dynamic_similarity(len(matches), runtime_profile.get_num_leaves())
+        static_scores[device] = compute_static_similarity(len(matches), mud_profiles[device].get_num_leaves())
     
     dynamic_scores = sorted(dynamic_scores.items(), key=lambda item: item[1])
     static_scores = sorted(static_scores.items(), key=lambda item: item[1])
@@ -35,7 +35,7 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
     return dynamic_scores, static_scores
 
 
-def compute_dynamic_similarity(matches, runtime_profile):
+def compute_dynamic_similarity(num_matches, runtime_profile_set_size):
     """
     Computes the dynamic similarity score using the formula defined in the paper.
 
@@ -50,15 +50,14 @@ def compute_dynamic_similarity(matches, runtime_profile):
 
     # We use number of leaves as every path from the root to a leaf is considered a unique element
     # for the set. Hence, number of leaves gives us the number of elements in the set.
-    num_leaves = runtime_profile.get_num_leaves()
-    score = len(matches) / num_leaves
+    score = num_matches / runtime_profile_set_size
 
     # print("Dynamic score: ", score)
 
     return score
 
 
-def compute_static_similarity(matches, mud_profile):
+def compute_static_similarity(num_matches, mud_profile_set_size):
     """
     Computes the static similarity score using the formula defined in the paper.
 
@@ -70,9 +69,8 @@ def compute_static_similarity(matches, mud_profile):
     score: static similarity score
     """
     score = 0
-
-    num_leaves = mud_profile.get_num_leaves()
-    score = len(matches) / num_leaves
+    
+    score = num_matches / mud_profile_set_size
 
     # print("Static score: ", score)
     

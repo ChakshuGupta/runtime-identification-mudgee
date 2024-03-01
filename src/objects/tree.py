@@ -1,4 +1,4 @@
-from objects.node import Node
+from src.objects.node import Node
 
 class Tree:
 

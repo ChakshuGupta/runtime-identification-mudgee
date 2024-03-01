@@ -1,8 +1,8 @@
 import os
 from scapy.all import *
 
-from objects.flow import Flow
-from objects.packet import Packet
+from src.objects.flow import Flow
+from src.objects.packet import Packet
 
 
 def get_pcaps_from_dir(input_dir):

@@ -1,7 +1,7 @@
 import sys
 import yaml
 
-from profile_handling import load_mud_profiles, runtime_profile_generation
+from src.profile_handling import load_mud_profiles, runtime_profile_generation
 
 
 if __name__ == "__main__":

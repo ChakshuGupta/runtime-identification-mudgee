@@ -1,4 +1,4 @@
-from objects.leaf import Leaf
+from src.objects.leaf import Leaf
 
 class Node:
     
