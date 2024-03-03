@@ -1,8 +1,8 @@
 import unittest
 
 from src.constants import DEFAULTGATEWAYCONTROLLER, DNS_CONTROLLER, NTP_CONTROLLER
-from src.objects.node import Node
 from src.objects.leaf import Leaf
+from src.objects.node import Node
 
 class TestNodeClass(unittest.TestCase):
 
