@@ -17,3 +17,5 @@ PROTOCOLS = {
     6  : 'TCP',
     17 : 'UDP'
 }
+
+EPOCH_TIME = 900000  # = 15 minutes

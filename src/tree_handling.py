@@ -166,6 +166,7 @@ def update_runtime_profile(flows, profile_tree):
                 dir = "to"
             update_node(comp, dir, profile_tree, flows[flow])
         # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
+    return profile_tree
 
 
 def add_ace_to_flow(flow_local, flow_internet, ace_matches):

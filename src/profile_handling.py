@@ -1,22 +1,13 @@
 import os
 
 from src.compute import compute_similarity_scores
+from src.constants import EPOCH_TIME
 from src.objects.flow import Flow
 from src.objects.tree import Tree  
 from src.pcap_handling import *
 from src.tree_handling import update_runtime_profile, generate_mud_profile_tree
 from src.utils import read_json
    
-
-
-def generate_flows_from_profile(flows_json):
-    """
-    """
-    flows = []
-    for flow in flows_json:
-        flows.append(Flow().from_profile(flow))
-    return flows
-
 
 def load_mud_profiles(model_dir):
     """
@@ -27,7 +18,6 @@ def load_mud_profiles(model_dir):
         if os.path.samefile(root, model_dir):
             continue
         device_name = os.path.basename(root)
-        # mud_profiles[device_name] = dict()
         for file in files:
             if "Mud" in file:
                 mud_profiles[device_name] = generate_mud_profile_tree(
@@ -62,7 +52,6 @@ def runtime_profile_generation(config, mud_profiles):
     # initialise time values
     start_time = packets[0].time # time of the first packet
     end_time = packets[-1].time # time of the last packet
-    epoch_time = 900000 # = 15 minutes
     in_time = 0 # time passed since the beginning of the epoch
 
     # print the duration of the packet capture
@@ -81,15 +70,15 @@ def runtime_profile_generation(config, mud_profiles):
         # get the time passed since start of the epoch
         in_time = packet.time - start_time
         
-        if in_time > epoch_time:
+        if in_time > EPOCH_TIME:
             # if the time pass has crossed epoch compute similarity scores
             # it is not ">=", since we still want to add packets to the flows till 
             # we are reach the epoch
 
             in_time = 0
-            start_time = start_time + epoch_time
+            start_time = start_time + EPOCH_TIME
             
-            update_runtime_profile(flows, runtime_profile)
+            runtime_profile = update_runtime_profile(flows, runtime_profile)
 
             dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
             print("Highest dynamic score : ", dynamic_scores[-1])
@@ -105,11 +94,13 @@ def runtime_profile_generation(config, mud_profiles):
                 break
 
 
-        # Generate a key using packet protocol and a frozen set of source IP and destination IP
+        # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
         # Using frozenset to ensure the key is hashable (a requirement for dict keys)
         key = (packet.proto, frozenset({packet.sip, packet.dip, packet.sport, packet.dport}))
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
+    
+    # If no scores availale: return None
     if dynamic_scores is None:
         dynamic_scores = (None, 0)
     if static_scores is None:
