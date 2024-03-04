@@ -106,9 +106,9 @@ def runtime_profile_generation(config, mud_profiles):
         flows[key] = flows.get(key, Flow()).add(packet)
     
     # If no scores availale: return None
-    if dynamic_scores is None:
+    if dynamic_scores is None or len(dynamic_scores) == 0:
         dynamic_scores = (None, 0)
-    if static_scores is None:
+    if static_scores is None or len(static_scores) == 0:
         static_scores = (None, 0)
 
     device_matched = (dynamic_scores[-1], static_scores[-1])
