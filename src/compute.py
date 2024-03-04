@@ -1,6 +1,6 @@
 from copy import deepcopy
 
-from src.constants import IP_TYPES
+from src.constants import IP_TYPES, PROTOCOLS
 from src.objects.leaf import Leaf
 from src.objects.node import Node
 from src.objects.tree import Tree
@@ -30,6 +30,9 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
         # compute the similarity scores
         dynamic_scores[device] = compute_dynamic_similarity(len(intersection), temp_profile.get_num_leaves())
         static_scores[device] = compute_static_similarity(len(intersection), mud_profiles[device].get_num_leaves())
+
+    dynamic_scores = {x:y for x,y in dynamic_scores.items() if (y is not None and y!=0) }
+    static_scores = {x:y for x,y in static_scores.items() if (y is not None and y!=0) }
     
     dynamic_scores = sorted(dynamic_scores.items(), key=lambda item: item[1])
     static_scores = sorted(static_scores.items(), key=lambda item: item[1])
@@ -171,14 +174,20 @@ def find_intersection(mud_profile, runtime_profile):
                         if mud_leaf.proto == "*" or mud_leaf.proto == runtime_leaf.proto:
                             proto_match = True
                         
-                        # if all are true, add to the matches list
-                        if sip_match and dip_match and sport_match and dport_match and proto_match:
-                            matches.append((runtime_domain, runtime_leaf))
+                        if PROTOCOLS.get(runtime_leaf.proto) == "UDP":
+                             # if protocol is UDP, add to the matches list
+                             if sip_match and dip_match and proto_match and (sport_match or dport_match) :
+                                 matches.append((runtime_domain, runtime_leaf))
+                        else:
+                            # if all are true, add to the matches list
+                            if sip_match and dip_match and sport_match and dport_match and proto_match:
+                                matches.append((runtime_domain, runtime_leaf))
                     
                     if len(matches) > 0:
                         intersection.append(matches[0])
                     if len(matches) > 1:
-                        for iter in range(len(matches)-1):
+                        print("Remove redundant leaves......")
+                        for iter in range(0, len(matches)-1):
                             temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
 
                     

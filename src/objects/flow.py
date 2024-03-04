@@ -58,7 +58,7 @@ class Flow(object):
             self.dport = pkt.sport
 
         self.proto = pkt.proto
-        self.eth_type = pkt.eth_type
+        self.eth_type = int(pkt.eth_type, 16)
 
         # Add packet to the flow
         self.packets.append(pkt)

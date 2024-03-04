@@ -61,6 +61,8 @@ def runtime_profile_generation(config, mud_profiles):
     runtime_profile = Tree(config["device-name"], config["default-gateway-ip"])
 
     device_matched = ""
+
+    dynamic_scores, static_scores = None, None
     # Traverse the packets in the list
     for packet in packets:
         # Check if packet has none fields
@@ -81,22 +83,25 @@ def runtime_profile_generation(config, mud_profiles):
             runtime_profile = update_runtime_profile(flows, runtime_profile)
 
             dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
-            print("Highest dynamic score : ", dynamic_scores[-1])
-            print("Highest static score : ", static_scores[-1])
 
-            if dynamic_scores[-1][1] == 1:
-                print("Match Found!", dynamic_scores[-1][0])
-                device_matched = (dynamic_scores[-1], static_scores[-1])
-                break
-            elif static_scores[-1][1] == 1:
-                print("Match Found!", static_scores[-1][0])
-                device_matched = (dynamic_scores[-1], static_scores[-1])
-                break
+            if len(dynamic_scores) > 0 and len(static_scores) > 0:
+
+                print("Highest dynamic score : ", dynamic_scores[-1])
+                print("Highest static score : ", static_scores[-1])
+
+                if dynamic_scores[-1][1] == 1:
+                    print("Match Found!", dynamic_scores[-1][0])
+                    device_matched = (dynamic_scores[-1], static_scores[-1])
+                    break
+                elif static_scores[-1][1] == 1:
+                    print("Match Found!", static_scores[-1][0])
+                    device_matched = (dynamic_scores[-1], static_scores[-1])
+                    break
 
 
         # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
         # Using frozenset to ensure the key is hashable (a requirement for dict keys)
-        key = (packet.proto, frozenset({packet.sip, packet.dip, packet.sport, packet.dport}))
+        key = (packet.proto, frozenset({packet.sip, packet.dip}))
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
     

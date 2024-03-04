@@ -270,7 +270,7 @@ def generate_mud_profile_tree(mud_profile):
                     add_to_node("Internet", "from", mud_profile_tree, flow_internet, "mud")
 
             else:
-                print("ERROR! Unknown policy type")
+                print("ERROR! Unknown policy type: ", acl["name"])
             
     mud_profile_tree.print()
 
