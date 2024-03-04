@@ -51,7 +51,7 @@ class TestNodeClass(unittest.TestCase):
         self.assertIn(DNS_CONTROLLER, test_node.get_edges())
         self.assertIn("10.10.10.10", test_node.get_edges())
 
-        self.assertEqual(list(test_node.get_edges()), [DEFAULTGATEWAYCONTROLLER, DNS_CONTROLLER, "10.10.10.10"])
+        self.assertListEqual(list(test_node.get_edges()), [DEFAULTGATEWAYCONTROLLER, DNS_CONTROLLER, "10.10.10.10"])
 
     def test_get_num_edges(self):
         # Create a node
@@ -69,3 +69,34 @@ class TestNodeClass(unittest.TestCase):
         test_node.add_leaf(Leaf(), DNS_CONTROLLER)
         # The number of edges should be the same
         self.assertEqual(test_node.get_num_edges(), 4)
+
+    def remove_leaf(self):
+        # Create a node
+        test_node = Node("local", "to")
+        # Add different test leaves
+        test_leaf_1 = Leaf()
+        test_leaf_1.sip = "10.10.10.10"
+        test_leaf_1.dip = "0.0.0.0"
+
+        test_leaf_2 = Leaf()
+        test_leaf_2.sip = "101.101.101.10"
+        test_leaf_2.dip = "0.0.0.0"
+
+        test_leaf_3 = Leaf()
+        test_leaf_3.sip = "102.102.102.10"
+        test_leaf_3.dip = "0.0.0.0"
+
+        test_node.add_leaf(test_leaf_1, "0.0.0.0")
+        test_node.add_leaf(test_leaf_2, "0.0.0.0")
+        test_node.add_leaf(test_leaf_3, "0.0.0.0")
+
+        # Check the number of leaves
+        self.assertEqual(len(test_node.get_num_leaves), 3)
+        self.assertListEqual(test_node.get_leaves(), [test_leaf_1, test_leaf_2, test_leaf_3])
+        # Remove a leaf
+        test_node.remove_leaf("0.0.0.0", test_leaf_2)
+        # Check the number of leaves again
+        self.assertEqual(len(test_node.get_num_leaves), 2)
+        # Confirm the right leaf was removed
+        self.assertNotIn(test_leaf_2, test_node.get_leaves())
+        self.assertListEqual(test_node.get_leaves(), [test_leaf_1, test_leaf_3])

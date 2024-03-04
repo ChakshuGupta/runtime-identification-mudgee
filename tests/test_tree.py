@@ -37,7 +37,7 @@ class TestTreeClass(unittest.TestCase):
         test_node.add_leaf(Leaf(), "10.10.10.10")
         self.test_tree.add_node(test_node)
         # Check the list of keys of the returned dict
-        self.assertEqual(list(self.test_tree.get_all_nodes().keys()), ["from local", "to internet"])
+        self.assertListEqual(list(self.test_tree.get_all_nodes().keys()), ["from local", "to internet"])
         self.assertDictEqual(self.test_tree.get_all_nodes(), self.test_tree.nodes)
 
     def test_get_num_leaves(self):

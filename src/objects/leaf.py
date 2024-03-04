@@ -13,6 +13,7 @@ class Leaf(Flow):
         self.dport = None
         # initialise protocol
         self.proto = None
+        self.eth_type = None
 
 
     def set_from_profile(self, flow):
@@ -26,6 +27,7 @@ class Leaf(Flow):
         self.dport = flow.dport if flow.dport is not None else "*"
 
         self.proto = flow.proto if flow.proto is not None else "*"
+        self.eth_type = flow.eth_type if flow.eth_type is not None else "*"
 
     def get_leaf(self):
         """

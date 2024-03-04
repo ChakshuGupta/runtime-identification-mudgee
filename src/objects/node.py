@@ -33,6 +33,7 @@ class Node:
 
     def get_num_leaves(self):
         """
+        Get the total number of leaves attached to this node
         """
         num = 0
         for domain in self.edges:
@@ -50,6 +51,16 @@ class Node:
         Return the number of edges linked to this node
         """
         return len(self.edges)
+    
+    def remove_leaf(self, domain, leaf):
+        """
+        Remove a leaf from the node
+        """
+        try:
+            self.edges[domain].remove(leaf)
+            return True
+        except:
+            return False
     
     def print(self):
         """
