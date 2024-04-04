@@ -14,6 +14,9 @@ class Leaf(Flow):
         # initialise protocol
         self.proto = None
         self.eth_type = None
+        # initialise domain values for the ips
+        self.sdomain = None
+        self.ddomain = None
 
 
     def set_from_profile(self, flow):
@@ -29,6 +32,10 @@ class Leaf(Flow):
         self.proto = flow.proto if flow.proto is not None else "*"
         self.eth_type = flow.eth_type if flow.eth_type is not None else "*"
 
+        # initialise domain values for the ips
+        self.sdomain = flow.sdomain
+        self.ddomain = flow.ddomain
+
     def get_leaf(self):
         """
         Returns a tuple of all the fields of the flow
@@ -39,8 +46,8 @@ class Leaf(Flow):
         """
         Override equality operator to match flows.
         """
-        sip_eq = bool(self.sip == __value.sip)
-        dip_eq = bool(self.dip == __value.dip)
+        sip_eq = bool(self.sip == __value.sip) or bool(self.sdomain == __value.sdomain)
+        dip_eq = bool(self.dip == __value.dip) or bool(self.ddomain == __value.ddomain)
 
         sport_eq = bool(self.sport == __value.sport)
         dport_eq = bool(self.dport == __value.dport)
