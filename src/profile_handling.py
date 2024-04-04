@@ -45,8 +45,8 @@ def runtime_profile_generation(config, mud_profiles):
     packets = list()
     dns_cache = dict()
     for pcap in pcap_list:
-        packets, temp_dns_cache = read_pcap(pcap)
-        packets.extend(packets)
+        packet_list, temp_dns_cache = read_pcap(pcap)
+        packets.extend(packet_list)
         dns_cache.update(temp_dns_cache)
     
     # Order read packets using time
@@ -70,6 +70,7 @@ def runtime_profile_generation(config, mud_profiles):
     for packet in packets:
         # Check if packet has none fields
         if packet.is_none():
+            print("Packet is none")
             continue
         
         # get the time passed since start of the epoch
@@ -79,6 +80,7 @@ def runtime_profile_generation(config, mud_profiles):
             # if the time pass has crossed epoch compute similarity scores
             # it is not ">=", since we still want to add packets to the flows till 
             # we are reach the epoch
+            print("Time passed: " + str(in_time))
 
             in_time = 0
             start_time = start_time + EPOCH_TIME

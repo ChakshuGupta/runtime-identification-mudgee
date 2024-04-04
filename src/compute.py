@@ -128,14 +128,14 @@ def find_intersection(mud_profile, runtime_profile):
 
                     for runtime_leaf in runtime_leaves:
                         # Get the src IP and dst IP and retreive the hostnames.
-                        runtime_sip_domain = get_hostname(runtime_leaf.sip)
-                        runtime_dip_domain = get_hostname(runtime_leaf.dip)
+                        runtime_sip_domain = runtime_leaf.sdomain if runtime_leaf.sdomain is not None else get_hostname(runtime_leaf.sip)
+                        runtime_dip_domain = runtime_leaf.ddomain if runtime_leaf.ddomain is not None else get_hostname(runtime_leaf.dip)
 
                          # Set the values in this tuple to False
                         (sip_match, dip_match, sport_match, dport_match, proto_match) = [False]*5
 
                         # compare the source IPs directly
-                        if mud_leaf.sip == "*" or mud_leaf.sip == runtime_leaf.sip:
+                        if mud_leaf.sip == "*" or mud_leaf.sip == runtime_leaf.sip or mud_leaf.sdomain == runtime_leaf.sdomain:
                             sip_match = True
                         # if the MUD IP is a subnet, check if the runtime IP is in the subnet
                         elif mud_sip_type == IP_TYPES[3] and is_ip_in_subnet(runtime_leaf.sip, mud_leaf.sip):
@@ -150,7 +150,7 @@ def find_intersection(mud_profile, runtime_profile):
                                 sip_match = True
                         
                         # compare the destination IPs directly
-                        if mud_leaf.dip == "*" or mud_leaf.dip == runtime_leaf.dip:
+                        if mud_leaf.dip == "*" or mud_leaf.dip == runtime_leaf.dip or mud_leaf.ddomain == runtime_leaf.ddomain:
                             dip_match = True
                         # if the MUD IP is a subnet, check if the runtime IP is in the subnet
                         elif mud_dip_type == IP_TYPES[3] and is_ip_in_subnet(runtime_leaf.dip, mud_leaf.dip):

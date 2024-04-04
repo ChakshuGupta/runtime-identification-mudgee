@@ -43,11 +43,16 @@ def read_pcap(pcap_file):
     packets = list()
     # Traverse through the list of raw packets and create packet objects
     for packet in raw_packets:
-        if packet.haslayer("DNS") and packet["DNS"].an is not None:
-            for i in range(packet["DNS"].ancount):
-                if packet["DNS"].an[i].type == 1:
-                    dns_cache[packet["DNS"].an[i].rdata] = packet["DNS"].qd.qname
-             
+        
         packets.append(Packet(packet))
+
+        if packet.haslayer("DNS"):
+            if packet["DNS"].an is not None:
+                for i in range(packet["DNS"].ancount):
+                    if packet["DNS"].an[i].type in [1, 5]:
+                        rrname = packet["DNS"].an[i].rrname.decode("utf-8")
+                        dns_cache[packet["DNS"].an[i].rdata] = rrname
+                        if rrname in dns_cache.keys():
+                            dns_cache[packet["DNS"].an[i].rdata] = dns_cache[rrname]
     
     return packets, dns_cache
