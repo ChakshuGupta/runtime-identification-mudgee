@@ -43,8 +43,11 @@ def runtime_profile_generation(config, mud_profiles):
         return None
     
     packets = list()
+    dns_cache = dict()
     for pcap in pcap_list:
-        packets.extend(read_pcap(pcap))
+        packets, temp_dns_cache = read_pcap(pcap)
+        packets.extend(packets)
+        dns_cache.update(temp_dns_cache)
     
     # Order read packets using time
     packets  = sorted(packets, key=lambda ts: ts.time)

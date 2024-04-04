@@ -38,9 +38,16 @@ def read_pcap(pcap_file):
     # Read the raw packets using scapy
     raw_packets = rdpcap(pcap_file)
 
+    dns_cache = dict()
+
     packets = list()
     # Traverse through the list of raw packets and create packet objects
     for packet in raw_packets:
+        if packet.haslayer("DNS") and packet["DNS"].an is not None:
+            for i in range(packet["DNS"].ancount):
+                if packet["DNS"].an[i].type == 1:
+                    dns_cache[packet["DNS"].an[i].rdata] = packet["DNS"].qd.qname
+             
         packets.append(Packet(packet))
     
-    return packets
+    return packets, dns_cache
