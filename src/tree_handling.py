@@ -39,7 +39,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                 else:
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
-                domain = get_hostname(flow.dip)
+                domain = flow.ddomain if flow.ddomain is not None else get_hostname(flow.dip)
         node.add_leaf(leaf, domain)
 
     elif dir == "from":
@@ -54,7 +54,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                 else:
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
-                domain = get_hostname(flow.sip)
+                domain = flow.sdomain if flow.sdomain is not None else get_hostname(flow.sip)
         node.add_leaf(leaf, domain)
 
     profile_tree.add_node(node)
@@ -85,7 +85,7 @@ def update_node(comp, dir, profile_tree, flow):
             else:
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
-            domain = get_hostname(flow.dip)
+            domain = flow.ddomain if flow.ddomain is not None else get_hostname(flow.dip)
         leaves = node.get_leaves(domain)
 
     elif dir == "from":
@@ -97,7 +97,7 @@ def update_node(comp, dir, profile_tree, flow):
             else:
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
-            domain = get_hostname(flow.sip)
+            domain = flow.sdomain if flow.sdomain is not None else get_hostname(flow.sip)
         leaves = node.get_leaves(domain)
     
     else: # Probably not needed. Just to cover all cases

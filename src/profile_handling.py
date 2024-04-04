@@ -107,6 +107,9 @@ def runtime_profile_generation(config, mud_profiles):
         key = (packet.proto, frozenset({packet.sip, packet.dip}))
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
+        # Set domain for the source IP and destination IP
+        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, None))
+        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, None))
     
     # If no scores availale: return None
     if dynamic_scores is None or len(dynamic_scores) == 0:

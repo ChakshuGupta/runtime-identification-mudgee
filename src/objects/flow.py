@@ -17,6 +17,9 @@ class Flow(object):
         # initialise protocol and ethType
         self.proto = None
         self.eth_type = None
+        # initialise domain values for the ips
+        self.sdomain = None
+        self.ddomain = None
 
         self.packets = list()
 
@@ -65,3 +68,11 @@ class Flow(object):
 
         return self
     
+    def set_domain(self, ip, domain):
+        """
+        Set the domains for the flow ips
+        """
+        if ip == self.sip:
+            self.sdomain = domain
+        elif ip == self.dip:
+            self.ddomain = domain
