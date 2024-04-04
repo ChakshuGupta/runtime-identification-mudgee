@@ -13,7 +13,6 @@ class Packet(object):
         # intiialise src and dest IPs
         self.sip = None
         self.dip = None
-        self.domain = None
         # initialise src and dest ports
         self.sport = None
         self.dport = None
@@ -41,7 +40,6 @@ class Packet(object):
         self.sip = pkt['IP'].src if pkt.haslayer('IP') else None
         self.dip = pkt['IP'].dst if pkt.haslayer('IP') else None
         self.proto = pkt['IP'].proto if pkt.haslayer('IP') else None
-        # self.domain = pkt["DNS"].qd.qname if pkt.haslayer('DNS') else None
 
         try:
             self.sport = pkt[PROTOCOLS[self.proto]].sport
@@ -79,7 +77,7 @@ class Packet(object):
         False: if none of the fiels id None
         """
 
-        if self.sip is None or self.dip is None or self.sport is None or self.dport is None:
+        if self.sip is None or self.dip is None or self.sport is None or self.dport is None or self.proto is None or self.eth_type is None:
             return True
         else:
             return False

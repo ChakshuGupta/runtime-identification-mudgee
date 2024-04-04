@@ -44,7 +44,11 @@ def read_pcap(pcap_file):
     # Traverse through the list of raw packets and create packet objects
     for packet in raw_packets:
         
-        packets.append(Packet(packet))
+        packet_obj = Packet(packet)
+        if packet_obj.is_none():
+            print(packet)
+            continue
+        packets.append(packet_obj)
 
         if packet.haslayer("DNS"):
             if packet["DNS"].an is not None:
