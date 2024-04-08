@@ -119,7 +119,7 @@ def runtime_profile_generation(config, mud_profiles):
     if static_scores is None or len(static_scores) == 0:
         static_scores = (None, 0)
 
-    device_matched = (dynamic_scores[-1], static_scores[-1])
+    device_matched = (dynamic_scores, static_scores)
 
     runtime_profile.print()
     return device_matched

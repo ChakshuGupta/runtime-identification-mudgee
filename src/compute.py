@@ -117,9 +117,9 @@ def find_intersection(mud_profile, runtime_profile):
             for mud_domain in mud_edges:
                 # Get the leaves for the selected domain from the MUD profile
                 mud_leaves = mud_profile.get_node(node_name).get_leaves(mud_domain)
+                matches = []
 
                 for mud_leaf in mud_leaves:
-                    matches = []
                     # Get the type of IP info in the MUD profile (IPv4/IPv6/Domain/subnet)
                     mud_sip_type = get_ip_type(mud_leaf.sip)
                     mud_dip_type = get_ip_type(mud_leaf.dip)
@@ -128,9 +128,6 @@ def find_intersection(mud_profile, runtime_profile):
                     runtime_leaves = nodes[node_name].get_leaves(runtime_domain)
 
                     for runtime_leaf in runtime_leaves:
-                        # Get the src IP and dst IP and retreive the hostnames.
-                        runtime_sip_domain = runtime_leaf.sdomain if runtime_leaf.sdomain is not None else get_hostname(runtime_leaf.sip)
-                        runtime_dip_domain = runtime_leaf.ddomain if runtime_leaf.ddomain is not None else get_hostname(runtime_leaf.dip)
 
                          # Set the values in this tuple to False
                         (sip_match, dip_match, sport_match, dport_match, proto_match) = [False]*5
@@ -141,14 +138,6 @@ def find_intersection(mud_profile, runtime_profile):
                         # if the MUD IP is a subnet, check if the runtime IP is in the subnet
                         elif mud_sip_type == IP_TYPES[3] and is_ip_in_subnet(runtime_leaf.sip, mud_leaf.sip):
                             sip_match = True
-                        # if it is a domain/hostname check in 2 ways:
-                        elif mud_sip_type == IP_TYPES[0]:
-                            # get the src ip from the domain to match it to the runtime src ip
-                            if get_ip_from_domain(mud_leaf.sip) == runtime_leaf.sip:
-                                sip_match = True
-                            # get the domain from the runtime sip, and match with the mud domain
-                            elif mud_leaf.sip == runtime_sip_domain:
-                                sip_match = True
                         
                         # compare the destination IPs directly
                         if mud_leaf.dip == "*" or mud_leaf.dip == runtime_leaf.dip or mud_leaf.ddomain == runtime_leaf.ddomain:
@@ -156,14 +145,6 @@ def find_intersection(mud_profile, runtime_profile):
                         # if the MUD IP is a subnet, check if the runtime IP is in the subnet
                         elif mud_dip_type == IP_TYPES[3] and is_ip_in_subnet(runtime_leaf.dip, mud_leaf.dip):
                             dip_match = True
-                        # if it is a domain/hostname type check in 2 ways:
-                        elif mud_dip_type == IP_TYPES[0]:
-                            # get the dst ip from the domain to match it to the runtime dst ip
-                            if get_ip_from_domain(mud_leaf.dip) == runtime_leaf.dip:
-                                dip_match = True
-                            # get the domain from the runtime dip, and match with the mud domain
-                            elif mud_leaf.dip == runtime_dip_domain:
-                                dip_match = True
                         
                         # compare the src ports
                         if mud_leaf.sport == "*" or mud_leaf.sport == runtime_leaf.sport:
@@ -186,15 +167,15 @@ def find_intersection(mud_profile, runtime_profile):
                             if sip_match and dip_match and sport_match and dport_match and proto_match:
                                 matches.append((runtime_domain, runtime_leaf))
                     
-                    # If matches exist, add to the intersection list
-                    if len(matches) > 0:
-                        intersection.append(matches[0])
-                    if len(matches) > 1:
-                        # If multiple leaves from the runtime match to the same MUD leaf, remove redundant leaves
-                        # from the temporary runtime profile
-                        print("Remove redundant leaves......")
-                        for iter in range(0, len(matches)-1):
-                            temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
+                # If matches exist, add to the intersection list
+                if len(matches) > 0:
+                    intersection.append(matches[0])
+                if len(matches) > 1:
+                    # If multiple leaves from the runtime match to the same MUD leaf, remove redundant leaves
+                    # from the temporary runtime profile
+                    print("Remove redundant leaves......")
+                    for iter in range(0, len(matches)-1):
+                        temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
 
                     
     

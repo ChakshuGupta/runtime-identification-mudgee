@@ -59,7 +59,7 @@ def read_pcap(pcap_file):
                 for i in range(packet["DNS"].ancount):
                     # Check if the answer type is A or CNAME
                     if packet["DNS"].an[i].type in [1, 5]:
-                        rrname = packet["DNS"].an[i].rrname.decode("utf-8")
+                        rrname = packet["DNS"].an[i].rrname.decode("utf-8").strip(".")
                         dns_cache[packet["DNS"].an[i].rdata] = rrname
                         if rrname in dns_cache.keys():
                             dns_cache[packet["DNS"].an[i].rdata] = dns_cache[rrname]

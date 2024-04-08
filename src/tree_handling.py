@@ -1,7 +1,7 @@
 from ipaddress import ip_address
 
 from src.constants import *
-from src.utils import get_hostname
+from src.utils import get_hostname, get_ip_type, get_ip_from_domain
 from src.objects.flow import Flow
 from src.objects.leaf import Leaf
 from src.objects.node import Node
@@ -261,8 +261,14 @@ def generate_mud_profile_tree(mud_profile):
                 add_ace_to_flow(flow_local, flow_internet, matches)
                 
                 if flow_local.sip != None:
+                    if get_ip_type(flow_local.sip) == IP_TYPES[0]:
+                        flow_local.sdomain = flow_local.sip
+                        flow_local.sip = get_ip_from_domain(flow_local.sip)
                     add_to_node("Local", "from", mud_profile_tree, flow_local, "mud")
                 if flow_internet.dip!= None:
+                    if get_ip_type(flow_internet.dip) == IP_TYPES[0]:
+                        flow_internet.ddomain = flow_internet.dip
+                        flow_internet.dip = get_ip_from_domain(flow_internet.dip)
                     add_to_node("Internet", "to", mud_profile_tree, flow_internet, "mud")
                 
 
@@ -272,8 +278,14 @@ def generate_mud_profile_tree(mud_profile):
                 add_ace_to_flow(flow_local, flow_internet, matches)
                 
                 if flow_local.dip != None:
+                    if get_ip_type(flow_local.dip) == IP_TYPES[0]:
+                        flow_local.ddomain = flow_local.dip
+                        flow_local.dip = get_ip_from_domain(flow_local.dip)
                     add_to_node("Local", "to", mud_profile_tree, flow_local, "mud")
                 if flow_internet.sip != None:
+                    if get_ip_type(flow_internet.sip) == IP_TYPES[0]:
+                        flow_internet.sdomain = flow_internet.sip
+                        flow_internet.sip = get_ip_from_domain(flow_internet.sip)
                     add_to_node("Internet", "from", mud_profile_tree, flow_internet, "mud")
 
             else:
