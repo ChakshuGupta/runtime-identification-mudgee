@@ -5,7 +5,7 @@ from src.objects.leaf import Leaf
 from src.objects.node import Node
 from src.objects.tree import Tree
 
-from src.utils import get_ip_type, get_hostname, get_ip_from_domain, is_ip_in_subnet
+from src.utils import get_ip_type,is_ip_in_subnet
 
 def compute_similarity_scores(mud_profiles, runtime_profile):
     """
@@ -101,7 +101,7 @@ def find_intersection(mud_profile, runtime_profile):
     nodes = temp_runtime_profile.get_all_nodes()
 
     for node_name in nodes:
-        print("Checking node: ", node_name)
+        # print("Checking node: ", node_name)
         # Check if the node exists in the MUD profile
         if mud_profile.get_node(node_name) == None:
             continue
@@ -117,9 +117,9 @@ def find_intersection(mud_profile, runtime_profile):
             for mud_domain in mud_edges:
                 # Get the leaves for the selected domain from the MUD profile
                 mud_leaves = mud_profile.get_node(node_name).get_leaves(mud_domain)
-                matches = []
 
                 for mud_leaf in mud_leaves:
+                    matches = []
                     # Get the type of IP info in the MUD profile (IPv4/IPv6/Domain/subnet)
                     mud_sip_type = get_ip_type(mud_leaf.sip)
                     mud_dip_type = get_ip_type(mud_leaf.dip)
@@ -167,18 +167,16 @@ def find_intersection(mud_profile, runtime_profile):
                             if sip_match and dip_match and sport_match and dport_match and proto_match:
                                 matches.append((runtime_domain, runtime_leaf))
                     
-                # If matches exist, add to the intersection list
-                if len(matches) > 0:
-                    intersection.append(matches[0])
-                if len(matches) > 1:
-                    # If multiple leaves from the runtime match to the same MUD leaf, remove redundant leaves
-                    # from the temporary runtime profile
-                    print("Remove redundant leaves......")
-                    for iter in range(0, len(matches)-1):
-                        temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
+                    # If matches exist, add to the intersection list
+                    if len(matches) > 0:
+                        intersection.append(matches[0])
+                    if len(matches) > 1:
+                        # If multiple leaves from the runtime match to the same MUD leaf, remove redundant leaves
+                        # from the temporary runtime profile
+                        print("\nRemove redundant leaves......")
+                        # print(matches)
+                        for iter in range(0, len(matches)-1):
+                            temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
 
-                    
-    
-    # print(matches)
     return intersection, temp_runtime_profile
 
