@@ -29,35 +29,35 @@ def add_to_node(comp, dir, profile_tree, flow, type):
 
     if dir == "to":
         if type == "mud":
-            domain = flow.dip
+            domain = leaf.dip
         else:
-            if flow.dip == profile_tree.default_gateway:
-                if flow.dport == DNS_PORT:
+            if leaf.dip == profile_tree.default_gateway:
+                if leaf.dport == DNS_PORT:
                     domain = DNS_CONTROLLER
-                elif flow.dport == NTP_PORT:
+                elif leaf.dport == NTP_PORT:
                     domain = NTP_CONTROLLER
                 else:
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
-                domain = flow.ddomain if flow.ddomain is not None else get_hostname(flow.dip)
-                domain = get_hostname(flow.dip) if ".local" in domain else domain
-                    
+                domain = leaf.ddomain
+                domain = get_hostname(leaf.dip) if ".local" in domain else domain
+
         node.add_leaf(leaf, domain)
 
     elif dir == "from":
         if type == "mud":
-            domain = flow.sip
+            domain = leaf.sip
         else:
-            if flow.sip == profile_tree.default_gateway:
-                if flow.sport == DNS_PORT:
+            if leaf.sip == profile_tree.default_gateway:
+                if leaf.sport == DNS_PORT:
                     domain = DNS_CONTROLLER
-                elif flow.sport == NTP_PORT:
+                elif leaf.sport == NTP_PORT:
                     domain = NTP_CONTROLLER
                 else:
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
-                domain = flow.sdomain if flow.sdomain is not None else get_hostname(flow.sip)
-                domain = get_hostname(flow.sip) if ".local" in domain else domain
+                domain = leaf.sdomain
+                domain = get_hostname(leaf.sip) if ".local" in domain else domain
         node.add_leaf(leaf, domain)
 
     profile_tree.add_node(node)
@@ -78,38 +78,39 @@ def update_node(comp, dir, profile_tree, flow):
     node = profile_tree.get_node(node_name)
     if node is None:
         add_to_node(comp, dir, profile_tree, flow, "runtime")
+        return
+
+    new_leaf = Leaf()
+    new_leaf.set_from_profile(flow)
 
     if dir == "to":
-        if flow.dip == profile_tree.default_gateway:
-            if flow.dport == DNS_PORT:
+        if new_leaf.dip == profile_tree.default_gateway:
+            if new_leaf.dport == DNS_PORT:
                 domain = DNS_CONTROLLER
-            elif flow.dport == NTP_PORT:
+            elif new_leaf.dport == NTP_PORT:
                 domain = NTP_CONTROLLER
             else:
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
-            domain = flow.ddomain if flow.ddomain is not None else get_hostname(flow.dip)
-            domain = get_hostname(flow.dip) if ".local" in domain else domain
+            domain = new_leaf.ddomain
+            domain = get_hostname(new_leaf.dip) if ".local" in domain else domain
         leaves = node.get_leaves(domain)
 
     elif dir == "from":
-        if flow.sip == profile_tree.default_gateway:
-            if flow.sport == DNS_PORT:
+        if new_leaf.sip == profile_tree.default_gateway:
+            if new_leaf.sport == DNS_PORT:
                 domain = DNS_CONTROLLER
-            elif flow.sport == NTP_PORT:
+            elif new_leaf.sport == NTP_PORT:
                 domain = NTP_CONTROLLER
             else:
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
-            domain = flow.sdomain if flow.sdomain is not None else get_hostname(flow.sip)
-            domain = get_hostname(flow.sip) if ".local" in domain else domain
+            domain = new_leaf.sdomain
+            domain = get_hostname(new_leaf.sip) if ".local" in domain else domain
         leaves = node.get_leaves(domain)
     
     else: # Probably not needed. Just to cover all cases
         return ValueError
-
-    new_leaf = Leaf()
-    new_leaf.set_from_profile(flow)
 
     if leaves is None:
         print("----------- Add new leaf to the tree ------------")
@@ -123,6 +124,8 @@ def update_node(comp, dir, profile_tree, flow):
         
         if not match_found:
             node.add_leaf(new_leaf, domain)
+    
+    return
 
 
 def update_runtime_profile(flows, profile_tree):
@@ -135,43 +138,42 @@ def update_runtime_profile(flows, profile_tree):
     """
     if profile_tree.is_empty():
         # generate the initial tree
-        for flow in flows:
-            if ip_address(flows[flow].sip).is_private:
+        for flow_key in flows:
+            if ip_address(flows[flow_key].sip).is_private:
                 comp = "Local"
                 dir = "from"
             else:
                 comp = "Internet"
                 dir = "from"
-            add_to_node(comp, dir, profile_tree, flows[flow], "runtime")
+            add_to_node(comp, dir, profile_tree, flows[flow_key], "runtime")
 
-            if ip_address(flows[flow].dip).is_private:
+            if ip_address(flows[flow_key].dip).is_private:
                 comp = "Local"
                 dir = "to"
             else:
                 comp = "Internet"
                 dir = "to"
-            add_to_node(comp, dir, profile_tree, flows[flow], "runtime")
+            add_to_node(comp, dir, profile_tree, flows[flow_key], "runtime")
         # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
         
     else:
-        for flow in flows:
-            if ip_address(flows[flow].sip).is_private:
+        for flow_key in flows:
+            if ip_address(flows[flow_key].sip).is_private:
                 comp = "Local"
                 dir = "from"
             else:
                 comp = "Internet"
                 dir = "from"
-            update_node(comp, dir, profile_tree, flows[flow])
+            update_node(comp, dir, profile_tree, flows[flow_key])
 
-            if ip_address(flows[flow].dip).is_private:
+            if ip_address(flows[flow_key].dip).is_private:
                 comp = "Local"
                 dir = "to"
             else:
                 comp = "Internet"
                 dir = "to"
-            update_node(comp, dir, profile_tree, flows[flow])
+            update_node(comp, dir, profile_tree, flows[flow_key])
         # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
-    return profile_tree
 
 
 def add_ace_to_flow(flow_local, flow_internet, ace_matches):

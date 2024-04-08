@@ -1,4 +1,5 @@
 from src.objects.flow import Flow
+from src.utils import get_hostname
 
 class Leaf(Flow):
     def __init__(self):
@@ -8,16 +9,15 @@ class Leaf(Flow):
         # intiialise src and dest IPs
         self.sip = None
         self.dip = None
+        # initialise domain values for the ips
+        self.sdomain = None
+        self.ddomain = None
         # initialise src and dest ports
         self.sport = None
         self.dport = None
         # initialise protocol
         self.proto = None
         self.eth_type = None
-        # initialise domain values for the ips
-        self.sdomain = None
-        self.ddomain = None
-
 
     def set_from_profile(self, flow):
         """
@@ -33,8 +33,8 @@ class Leaf(Flow):
         self.eth_type = flow.eth_type if flow.eth_type is not None else "*"
 
         # initialise domain values for the ips
-        self.sdomain = flow.sdomain
-        self.ddomain = flow.ddomain
+        self.sdomain = flow.sdomain if flow.sdomain is not None else get_hostname(flow.sip)
+        self.ddomain = flow.ddomain if flow.ddomain is not None else get_hostname(flow.dip)
 
     def get_leaf(self):
         """
@@ -42,16 +42,21 @@ class Leaf(Flow):
         """
         return (self.sip, self.dip, self.sport, self.dport, self.proto)
     
-    def __eq__(self, __value: object) -> bool:
+    def __eq__(self, other: object) -> bool:
         """
         Override equality operator to match flows.
         """
-        sip_eq = bool(self.sip == __value.sip) or bool(self.sdomain == __value.sdomain)
-        dip_eq = bool(self.dip == __value.dip) or bool(self.ddomain == __value.ddomain)
+        if isinstance(other, Leaf):
 
-        sport_eq = bool(self.sport == __value.sport)
-        dport_eq = bool(self.dport == __value.dport)
+            sip_eq = bool(self.sip == other.sip) or bool(self.sdomain == other.sdomain)
+            dip_eq = bool(self.dip == other.dip) or bool(self.ddomain == other.ddomain)
 
-        proto_eq = bool(self.proto == __value.proto)
+            sport_eq = bool(self.sport == other.sport)
+            dport_eq = bool(self.dport == other.dport)
 
-        return (sip_eq and dip_eq and sport_eq and dport_eq and proto_eq)
+            proto_eq = bool(self.proto == other.proto)
+
+            return (sip_eq and dip_eq and sport_eq and dport_eq and proto_eq)
+
+        else:
+            return False

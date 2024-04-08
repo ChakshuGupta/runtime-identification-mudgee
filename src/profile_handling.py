@@ -79,13 +79,13 @@ def runtime_profile_generation(config, mud_profiles):
         if in_time > EPOCH_TIME:
             # if the time pass has crossed epoch compute similarity scores
             # it is not ">=", since we still want to add packets to the flows till 
-            # we are reach the epoch
+            # we reach the epoch
             print("Time passed: " + str(in_time))
 
             in_time = 0
             start_time = start_time + EPOCH_TIME
             
-            runtime_profile = update_runtime_profile(flows, runtime_profile)
+            update_runtime_profile(flows, runtime_profile)
 
             dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
 

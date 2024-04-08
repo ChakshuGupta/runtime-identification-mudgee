@@ -27,6 +27,7 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
         # find the intersection between the MUD profile tree and the runtime profile tree
         intersection, temp_profile = find_intersection(mud_profiles[device], runtime_profile)
 
+        print(runtime_profile.device_name, device, intersection)
         # compute the similarity scores
         dynamic_scores[device] = compute_dynamic_similarity(len(intersection), temp_profile.get_num_leaves())
         static_scores[device] = compute_static_similarity(len(intersection), mud_profiles[device].get_num_leaves())

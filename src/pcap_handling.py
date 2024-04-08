@@ -31,6 +31,7 @@ def read_pcap(pcap_file):
 
     [Returns]
     packets: List of packets
+    dns_cache: {IP: domain name}
 
     """
 
@@ -38,6 +39,7 @@ def read_pcap(pcap_file):
     # Read the raw packets using scapy
     raw_packets = rdpcap(pcap_file)
 
+    # Create an empty DNS cache {IP: domain name}
     dns_cache = dict()
 
     packets = list()
@@ -50,9 +52,12 @@ def read_pcap(pcap_file):
             continue
         packets.append(packet_obj)
 
+        # Generate the DNS cache from the packets
         if packet.haslayer("DNS"):
+            # Check if the packet has an answer to a DNS query
             if packet["DNS"].an is not None:
                 for i in range(packet["DNS"].ancount):
+                    # Check if the answer type is A or CNAME
                     if packet["DNS"].an[i].type in [1, 5]:
                         rrname = packet["DNS"].an[i].rrname.decode("utf-8")
                         dns_cache[packet["DNS"].an[i].rdata] = rrname

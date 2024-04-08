@@ -11,15 +11,15 @@ class Flow(object):
         # intiialise src and dest IPs
         self.sip = None
         self.dip = None
+        # initialise domain values for the ips
+        self.sdomain = None
+        self.ddomain = None
         # initialise src and dest ports
         self.sport = None
         self.dport = None
         # initialise protocol and ethType
         self.proto = None
         self.eth_type = None
-        # initialise domain values for the ips
-        self.sdomain = None
-        self.ddomain = None
 
         self.packets = list()
 
@@ -29,6 +29,8 @@ class Flow(object):
         data = {
             'sip' : self.sip,
             'dip' : self.dip,
+            "sdomain" : self.sdomain,
+            "ddomain" : self.ddomain,
             'sport' : self.sport,
             'dport' : self.dport,
             'ip_proto' : self.proto,
