@@ -48,7 +48,7 @@ def read_pcap(pcap_file):
         
         packet_obj = Packet(packet)
         if packet_obj.is_none():
-            print(packet)
+            # If the packet type is not UDP or TCP, packet object will be none.
             continue
         packets.append(packet_obj)
 
