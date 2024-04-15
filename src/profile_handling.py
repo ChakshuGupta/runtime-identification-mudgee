@@ -115,9 +115,9 @@ def runtime_profile_generation(config, mud_profiles):
     
     # If no scores availale: return None
     if dynamic_scores is None or len(dynamic_scores) == 0:
-        dynamic_scores = [(None, 0)]
+        dynamic_scores = [("", 0)]
     if static_scores is None or len(static_scores) == 0:
-        static_scores = [(None, 0)]
+        static_scores = [("", 0)]
 
     device_matched = {"dynamic_score": dynamic_scores, "static_score":  static_scores}
 
