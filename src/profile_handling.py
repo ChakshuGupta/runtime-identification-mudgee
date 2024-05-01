@@ -91,16 +91,16 @@ def runtime_profile_generation(config, mud_profiles):
 
             if len(dynamic_scores) > 0 and len(static_scores) > 0:
 
-                print("Highest dynamic score : ", dynamic_scores[-1])
-                print("Highest static score : ", static_scores[-1])
+                print("Highest dynamic score : ", dynamic_scores[0])
+                print("Highest static score : ", static_scores[0])
 
                 if dynamic_scores[-1][1] == 1:
                     print("Match Found!", dynamic_scores[-1][0])
-                    device_matched = {"dynamic_score": dynamic_scores[-1], "static_score":  static_scores[-1]}
+                    device_matched = {"dynamic_score": dynamic_scores[0], "static_score":  static_scores[0]}
                     break
                 elif static_scores[-1][1] == 1:
                     print("Match Found!", static_scores[-1][0])
-                    device_matched = {"dynamic_score": dynamic_scores[-1], "static_score":  static_scores[-1]}
+                    device_matched = {"dynamic_score": dynamic_scores[0], "static_score":  static_scores[0]}
                     break
 
 

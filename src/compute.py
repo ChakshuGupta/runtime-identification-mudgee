@@ -37,8 +37,8 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
     static_scores = {x:y for x,y in static_scores.items() if (y is not None and y!=0) }
     
     # Sort the values according to the value
-    dynamic_scores = sorted(dynamic_scores.items(), key=lambda item: item[1])
-    static_scores = sorted(static_scores.items(), key=lambda item: item[1])
+    dynamic_scores = sorted(dynamic_scores.items(), key=lambda item: item[1], reverse=True)
+    static_scores = sorted(static_scores.items(), key=lambda item: item[1], reverse=True)
 
     return dynamic_scores, static_scores
 
@@ -56,9 +56,10 @@ def compute_dynamic_similarity(intersection_set_size, runtime_profile_set_size):
     """
     score = 0
 
-    # We use number of leaves as every path from the root to a leaf is considered a unique element
-    # for the set. Hence, number of leaves gives us the number of elements in the set.
-    score = intersection_set_size / runtime_profile_set_size
+    if runtime_profile_set_size != 0:
+        # We use number of leaves as every path from the root to a leaf is considered a unique element
+        # for the set. Hence, number of leaves gives us the number of elements in the set.
+        score = intersection_set_size / runtime_profile_set_size
 
     # print("Dynamic score: ", score)
 
@@ -78,7 +79,9 @@ def compute_static_similarity(intersection_set_size, mud_profile_set_size):
     """
     score = 0
     
-    score = intersection_set_size / mud_profile_set_size
+    if mud_profile_set_size != 0:
+        # We use number of leaves as every path from the root to a leaf is considered a unique element
+        score = intersection_set_size / mud_profile_set_size
 
     # print("Static score: ", score)
     
