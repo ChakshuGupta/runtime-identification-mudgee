@@ -65,10 +65,13 @@ def get_hostname(ip_address):
     """
     if ip_address != "*":
         try:
-            res = socket.gethostbyaddr(ip_address)
-            host = res[0]
+            host = ipaddress.ip_address(ip_address).reverse_pointer
         except:
-            host = ip_address
+            try:
+                res = socket.gethostbyaddr(ip_address)
+                host = res[0]
+            except:
+                host = ip_address
     else:
         host = "*"
     
@@ -121,8 +124,5 @@ def is_ip_in_subnet(ip_address, subnet_address):
     [Returns]
     True/False
     """
-    for address in ipaddress.ip_network(subnet_address):
-        if address == ip_address:
-            return True
-
-    return False
+    network = ipaddress.ip_network(subnet_address)
+    return ipaddress.ip_address(ip_address) in network

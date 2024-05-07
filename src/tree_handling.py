@@ -40,7 +40,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
                 domain = leaf.ddomain
-                domain = get_hostname(leaf.dip) if ".local" in domain else domain
+                # domain = get_hostname(leaf.dip) if ".local" in domain else domain
 
         node.add_leaf(leaf, domain)
 
@@ -57,7 +57,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                     domain = DEFAULTGATEWAYCONTROLLER
             else:
                 domain = leaf.sdomain
-                domain = get_hostname(leaf.sip) if ".local" in domain else domain
+                # domain = get_hostname(leaf.sip) if ".local" in domain else domain
         node.add_leaf(leaf, domain)
 
     profile_tree.add_node(node)
@@ -93,7 +93,7 @@ def update_node(comp, dir, profile_tree, flow):
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
             domain = new_leaf.ddomain
-            domain = get_hostname(new_leaf.dip) if ".local" in domain else domain
+            # domain = get_hostname(new_leaf.dip) if ".local" in domain else domain
         leaves = node.get_leaves(domain)
 
     elif dir == "from":
@@ -106,7 +106,7 @@ def update_node(comp, dir, profile_tree, flow):
                 domain = DEFAULTGATEWAYCONTROLLER
         else:
             domain = new_leaf.sdomain
-            domain = get_hostname(new_leaf.sip) if ".local" in domain else domain
+            # domain = get_hostname(new_leaf.sip) if ".local" in domain else domain
         leaves = node.get_leaves(domain)
     
     else: # Probably not needed. Just to cover all cases
@@ -191,10 +191,10 @@ def add_ace_to_flow(flow_local, flow_internet, ace_matches):
                 elif "destination" in key:
                     flow_local.dip = ace_matches[match_key][key]
                     flow_internet.dip = ace_matches[match_key][key]
-                elif "dst-dnsname" in key:
+                elif "ietf-acldns:dst-dnsname" == key:
                     flow_local.dip = ace_matches[match_key][key]
                     flow_internet.dip = ace_matches[match_key][key]
-                elif "src-dnsname" in key:
+                elif "ietf-acldns:src-dnsname" == key:
                     flow_local.sip = ace_matches[match_key][key]
                     flow_internet.sip = ace_matches[match_key][key]
                 elif key == "protocol":
@@ -256,7 +256,7 @@ def generate_mud_profile_tree(mud_profile):
             flow_internet = Flow()
             matches = ace["matches"]
             # if the acl is for "from-device" and "to-internet"
-            if acl["name"] == from_device_name:
+            if "from" in acl["name"]:
                 
                 add_ace_to_flow(flow_local, flow_internet, matches)
                 
@@ -273,7 +273,7 @@ def generate_mud_profile_tree(mud_profile):
                 
 
             # if the acl is for "to-device" policy and "from-internet"
-            elif acl["name"] == to_device_name:
+            elif "to" in acl["name"]:
                 
                 add_ace_to_flow(flow_local, flow_internet, matches)
                 
