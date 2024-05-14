@@ -37,7 +37,7 @@ def read_json(filepath):
         with open(filepath) as json_file:
             content = json.load(json_file)
     else:
-        print("ERROR! Expected .json file but got ", os.path.splittext(filepath)[-1])    
+        print("ERROR! Expected .json file but got ", os.path.splittext(filepath)[-1])
     return content
 
 
@@ -65,13 +65,10 @@ def get_hostname(ip_address):
     """
     if ip_address != "*":
         try:
-            host = ipaddress.ip_address(ip_address).reverse_pointer
+            res = socket.gethostbyaddr(ip_address)
+            host = res[0]
         except:
-            try:
-                res = socket.gethostbyaddr(ip_address)
-                host = res[0]
-            except:
-                host = ip_address
+            host = ip_address
     else:
         host = "*"
     
@@ -88,10 +85,12 @@ def get_ip_from_domain(domain):
     ip address
     """
     try:
-        return socket.gethostbyname(domain)
+        domain, _, ip = socket.gethostbyname_ex(domain)
+        print(domain, sorted(ip)[0])
+        return domain, sorted(ip)[0]
     except:
         # if the corresponding IP does not exist, return the domain itself
-        return domain
+        return domain, domain
 
 
 def get_ip_type(ip_address):
