@@ -63,14 +63,22 @@ def get_hostname(ip_address):
     [Returns]
     host
     """
-    if ip_address != "*":
-        try:
-            res = socket.gethostbyaddr(ip_address)
-            host = res[0]
-        except:
-            host = ip_address
-    else:
-        host = "*"
+    if ip_address is None:
+        return None
+
+    try:
+        if ip_address != "*":
+            if "/" not in ip_address:
+                    res = socket.gethostbyaddr(ip_address)
+                    host = res[0]
+            else:
+                    print(ip_address)
+                    res = socket.gethostbyaddr(ip_address.split("/")[0])
+                    host = res[0]
+        else:
+            host = None
+    except:
+        host = None
     
     return host
 
@@ -85,9 +93,9 @@ def get_ip_from_domain(domain):
     ip address
     """
     try:
-        domain, _, ip = socket.gethostbyname_ex(domain)
-        print(domain, sorted(ip)[0])
-        return domain, sorted(ip)[0]
+        dom, _, ip = socket.gethostbyname_ex(domain)
+        print(dom, sorted(ip)[0])
+        return dom, sorted(ip)[0]
     except:
         # if the corresponding IP does not exist, return the domain itself
         return domain, domain

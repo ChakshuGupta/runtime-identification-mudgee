@@ -209,9 +209,13 @@ def add_ace_to_flow(flow_local, flow_internet, ace_matches):
                     flow_local.dip = ace_matches[match_key][key]
                     flow_internet.dip = ace_matches[match_key][key]
                 elif key == "ietf-acldns:dst-dnsname":
+                    flow_local.dip = ace_matches[match_key][key]
+                    flow_internet.dip = ace_matches[match_key][key]
                     flow_local.ddomain = ace_matches[match_key][key]
                     flow_internet.ddomain = ace_matches[match_key][key]
                 elif key == "ietf-acldns:src-dnsname":
+                    flow_local.sip = ace_matches[match_key][key]
+                    flow_internet.sip = ace_matches[match_key][key]
                     flow_local.sdomain = ace_matches[match_key][key]
                     flow_internet.sdomain = ace_matches[match_key][key]
                 elif key == "protocol":
@@ -219,6 +223,7 @@ def add_ace_to_flow(flow_local, flow_internet, ace_matches):
                     flow_internet.proto = ace_matches[match_key][key]
         
         elif match_key == "ietf-mud:mud" and "controller" in ace_matches[match_key]:
+            flow_local.sip = ace_matches[match_key]["controller"]
             flow_local.sdomain = ace_matches[match_key]["controller"]
 
         elif match_key == "tcp":
@@ -240,8 +245,6 @@ def add_ace_to_flow(flow_local, flow_internet, ace_matches):
         elif match_key == "eth":
             flow_local.eth_type = int(ace_matches[match_key]["ethertype"], 16)
             flow_internet.eth_type = int(ace_matches[match_key]["ethertype"], 16)
-    
-    return flow_local, flow_internet
 
 
 def generate_mud_profile_tree(mud_profile):
@@ -277,35 +280,44 @@ def generate_mud_profile_tree(mud_profile):
             flow_local = Flow()
             flow_internet = Flow()
             matches = ace["matches"]
-            # if the acl is for "from-device", it is also "to-internet"
-            if "from" in acl["name"]:
+            # if the acl is for "to-device" policy, it is also "from-internet"
+            if "to" in acl["name"]:
                 
-                flow_local, flow_internet = add_ace_to_flow(flow_local, flow_internet, matches)
+                add_ace_to_flow(flow_local, flow_internet, matches)
                 
-                if flow_local.sip != None or flow_local.sdomain != None:
-                    if flow_local.sip == None:
+                if flow_local.sip is not None:
+                    if flow_local.sdomain is None:
+                        flow_local.sdomain = get_hostname(flow_local.sip)
+                    elif get_ip_type(flow_local.sip) == IP_TYPES[0]:
                         flow_local.sdomain, flow_local.sip = get_ip_from_domain(flow_local.sdomain)
-                    add_to_node("Local", "from", mud_profile_tree, flow_local, "mud")
+                    add_to_node("Local", "to", mud_profile_tree, flow_local, "mud")
                 
-                if flow_internet.dip!= None or flow_local.ddomain != None:
-                    if flow_local.dip == None:
-                        flow_local.ddomain, flow_local.dip = get_ip_from_domain(flow_local.ddomain)
-                    add_to_node("Internet", "to", mud_profile_tree, flow_internet, "mud")
+                if flow_internet.sip is not None:
+                    if flow_internet.sdomain is None:
+                        flow_internet.sdomain = get_hostname(flow_internet.sip)
+                    elif get_ip_type(flow_internet.sip) == IP_TYPES[0]:
+                        flow_internet.sdomain, flow_internet.sip = get_ip_from_domain(flow_internet.sdomain)
+                    add_to_node("Internet", "from", mud_profile_tree, flow_internet, "mud")
                 
 
-            # if the acl is for "to-device" policy, it is also "from-internet"
-            elif "to" in acl["name"]:
+           # if the acl is for "from-device", it is also "to-internet"
+            elif "from" in acl["name"]:
                 
-                flow_local, flow_internet = add_ace_to_flow(flow_local, flow_internet, matches)
+                add_ace_to_flow(flow_local, flow_internet, matches)
                 
-                if flow_local.dip != None or flow_local.ddomain != None:
-                    if flow_local.dip == None:
+                if flow_local.dip is not None:
+                    if flow_local.ddomain is None:
+                        flow_local.ddomain = get_hostname(flow_local.dip)
+                    elif get_ip_type(flow_local.dip) == IP_TYPES[0]:
                         flow_local.ddomain, flow_local.dip = get_ip_from_domain(flow_local.ddomain)
-                    add_to_node("Local", "to", mud_profile_tree, flow_local, "mud")
-                if flow_local.sip != None or flow_local.sdomain != None:
-                    if flow_local.sip == None:
-                        flow_local.sdomain, flow_local.sip = get_ip_from_domain(flow_local.sdomain)
-                    add_to_node("Internet", "from", mud_profile_tree, flow_internet, "mud")
+                    add_to_node("Local", "from", mud_profile_tree, flow_local, "mud")
+            
+                if flow_internet.dip is not None:
+                    if flow_internet.ddomain is None:
+                        flow_internet.ddomain = get_hostname(flow_internet.dip)
+                    elif get_ip_type(flow_internet.dip) == IP_TYPES[0]:
+                        flow_internet.ddomain, flow_internet.dip = get_ip_from_domain(flow_internet.ddomain)
+                    add_to_node("Internet", "to", mud_profile_tree, flow_internet, "mud")
 
             else:
                 print("ERROR! Unknown policy type: ", acl["name"])

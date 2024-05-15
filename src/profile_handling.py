@@ -6,7 +6,7 @@ from src.objects.flow import Flow
 from src.objects.tree import Tree  
 from src.pcap_handling import *
 from src.tree_handling import update_runtime_profile, generate_mud_profile_tree
-from src.utils import read_json
+from src.utils import read_json, get_hostname
    
 
 def load_mud_profiles(model_dir):
@@ -88,6 +88,7 @@ def runtime_profile_generation(config, mud_profiles):
             update_runtime_profile(flows, runtime_profile)
 
             dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
+            print(dynamic_scores, static_scores)
 
             if len(dynamic_scores) > 0 and len(static_scores) > 0:
 
@@ -110,8 +111,8 @@ def runtime_profile_generation(config, mud_profiles):
         # Add a the packet to the flow
         flows[key] = flows.get(key, Flow()).add(packet)
         # Set domain for the source IP and destination IP
-        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, None))
-        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, None))
+        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, get_hostname(packet.sip)))
+        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, get_hostname(packet.dip)))
     
     # If no scores availale: return None
     if dynamic_scores is None or len(dynamic_scores) == 0:
