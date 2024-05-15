@@ -55,10 +55,11 @@ def runtime_profile_generation(config, mud_profiles):
     # initialise time values
     start_time = packets[0].time # time of the first packet
     end_time = packets[-1].time # time of the last packet
+    total_time = end_time - start_time
     in_time = 0 # time passed since the beginning of the epoch
 
     # print the duration of the packet capture
-    print("\n\n------- Total time: " + str(end_time - start_time) + " -------\n\n")
+    print("\n\n------- Total time: " + str(total_time) + " -------\n\n")
 
     flows = dict()
     runtime_profile = Tree(config["device-name"], config["default-gateway-ip"])
@@ -76,14 +77,23 @@ def runtime_profile_generation(config, mud_profiles):
         # get the time passed since start of the epoch
         in_time = packet.time - start_time
         
-        if in_time > EPOCH_TIME:
+        # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
+        # Using frozenset to ensure the key is hashable (a requirement for dict keys)
+        key = (packet.proto, frozenset({packet.sip, packet.dip}))
+        # Add a the packet to the flow
+        flows[key] = flows.get(key, Flow()).add(packet)
+        # Set domain for the source IP and destination IP
+        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, None))
+        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, None))
+        
+        if in_time >= EPOCH_TIME or in_time == total_time:
             # if the time pass has crossed epoch compute similarity scores
             # it is not ">=", since we still want to add packets to the flows till 
             # we reach the epoch
             print("Time passed: " + str(in_time))
 
             in_time = 0
-            start_time = start_time + EPOCH_TIME
+            start_time = start_time + min(EPOCH_TIME, total_time)
             
             update_runtime_profile(flows, runtime_profile)
 
@@ -103,16 +113,6 @@ def runtime_profile_generation(config, mud_profiles):
                     print("Match Found!", static_scores[-1][0])
                     device_matched = {"dynamic_score": dynamic_scores[0], "static_score":  static_scores[0]}
                     break
-
-
-        # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
-        # Using frozenset to ensure the key is hashable (a requirement for dict keys)
-        key = (packet.proto, frozenset({packet.sip, packet.dip}))
-        # Add a the packet to the flow
-        flows[key] = flows.get(key, Flow()).add(packet)
-        # Set domain for the source IP and destination IP
-        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, get_hostname(packet.sip)))
-        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, get_hostname(packet.dip)))
     
     # If no scores availale: return None
     if dynamic_scores is None or len(dynamic_scores) == 0:

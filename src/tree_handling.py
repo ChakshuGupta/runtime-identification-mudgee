@@ -31,12 +31,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
     new_leaf.set_from_profile(flow)
 
     if dir == "to":
-        if type == "mud":
-            if new_leaf.ddomain == None:
-                domain = new_leaf.dip
-            else:
-                domain = new_leaf.ddomain
-        else:
+        if type == "runtime":
             if new_leaf.dip == profile_tree.default_gateway:
                 if new_leaf.dport == DNS_PORT:
                     new_leaf.ddomain = DNS_CONTROLLER
@@ -44,15 +39,10 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                     new_leaf.ddomain = NTP_CONTROLLER
                 else:
                     new_leaf.ddomain = DEFAULTGATEWAYCONTROLLER
-            domain = new_leaf.ddomain
+        domain = new_leaf.ddomain
 
     elif dir == "from":
-        if type == "mud":
-            if new_leaf.sdomain == None:
-                domain = new_leaf.sip
-            else:
-                domain = new_leaf.sdomain
-        else:
+        if type == "runtime":
             if new_leaf.sip == profile_tree.default_gateway:
                 if new_leaf.sport == DNS_PORT:
                     new_leaf.sdomain = DNS_CONTROLLER
@@ -61,7 +51,7 @@ def add_to_node(comp, dir, profile_tree, flow, type):
                 else:
                     new_leaf.sdomain = DEFAULTGATEWAYCONTROLLER
 
-            domain = new_leaf.sdomain
+        domain = new_leaf.sdomain
 
     leaves = node.get_leaves(domain)
     if leaves is None:
@@ -79,6 +69,8 @@ def add_to_node(comp, dir, profile_tree, flow, type):
     
     if new_node:
         profile_tree.add_node(node)
+    
+    return
 
 
 
