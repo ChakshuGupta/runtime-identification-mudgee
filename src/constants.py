@@ -18,4 +18,4 @@ PROTOCOLS = {
     17 : 'UDP'
 }
 
-EPOCH_TIME = 900000  # = 15 minutes
+EPOCH_TIME = 600000  # = 15 minutes

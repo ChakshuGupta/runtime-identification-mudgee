@@ -163,7 +163,7 @@ def find_intersection(mud_profile, runtime_profile):
                         
                         if PROTOCOLS.get(runtime_leaf.proto) == "UDP":
                              # if protocol is UDP, only check if src or dst port macthes and add to the matches list
-                             if sip_match and dip_match and proto_match and (sport_match or dport_match) :
+                             if sip_match and dip_match and proto_match :
                                  matches.append((runtime_domain, runtime_leaf))
                         else:
                             # if all are true, add to the matches list
