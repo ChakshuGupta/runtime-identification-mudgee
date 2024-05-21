@@ -63,8 +63,6 @@ def get_hostname(ip_address):
     [Returns]
     host
     """
-    if ip_address is None:
-        return None
 
     try:
         if ip_address != "*":
@@ -76,9 +74,9 @@ def get_hostname(ip_address):
                     res = socket.gethostbyaddr(ip_address.split("/")[0])
                     host = res[0]
         else:
-            host = None
+            host = ip_address
     except:
-        host = None
+        host = ip_address
     
     return host
 

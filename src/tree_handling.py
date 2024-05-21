@@ -73,70 +73,6 @@ def add_to_node(comp, dir, profile_tree, flow, type):
     return
 
 
-
-# def update_node(comp, dir, profile_tree, flow):
-#     """
-#     Update the node in the tree. This adds a new node or adds edges and/or leaves
-#     to existing nodes.
-
-#     [Args]
-#     comp: the component (local/internet) involved in the flow
-#     dir: the direction of the communication (to/from)
-#     profile_tree: tree object of the runtime profile of the device getting generated
-#     flow: the current flow getting processed to add to the node (if not there)
-#     """
-#     node_name = dir + " " + comp
-#     node = profile_tree.get_node(node_name)
-#     if node is None:
-#         add_to_node(comp, dir, profile_tree, flow, "runtime")
-#         return
-
-#     new_leaf = Leaf()
-#     new_leaf.set_from_profile(flow)
-
-#     if dir == "to":
-#         if new_leaf.dip == profile_tree.default_gateway:
-#             if new_leaf.dport == DNS_PORT:
-#                 new_leaf.ddomain = DNS_CONTROLLER
-#             elif new_leaf.dport == NTP_PORT:
-#                 new_leaf.ddomain = NTP_CONTROLLER
-#             else:
-#                 new_leaf.ddomain = DEFAULTGATEWAYCONTROLLER
-        
-#         domain = new_leaf.ddomain
-#         leaves = node.get_leaves(new_leaf.ddomain)
-
-#     elif dir == "from":
-#         if new_leaf.sip == profile_tree.default_gateway:
-#             if new_leaf.sport == DNS_PORT:
-#                 new_leaf.sdomain = DNS_CONTROLLER
-#             elif new_leaf.sport == NTP_PORT:
-#                 new_leaf.sdomain = NTP_CONTROLLER
-#             else:
-#                 new_leaf.sdomain = DEFAULTGATEWAYCONTROLLER
-
-#         domain = new_leaf.sdomain
-#         leaves = node.get_leaves(new_leaf.sdomain)
-    
-#     else: # Probably not needed. Just to cover all cases
-#         return ValueError
-
-#     if leaves is None:
-#         print("----------- Add new leaf to the tree ------------")
-#         node.add_leaf(new_leaf, domain)
-#     else:
-#         match_found = False
-#         # compare the leaves to find a match
-#         for leaf in leaves:
-#             if leaf == new_leaf:
-#                 match_found = True
-        
-#         if not match_found:
-#             node.add_leaf(new_leaf, domain)
-    
-#     return
-
-
 def update_runtime_profile(flows, profile_tree):
     """
     Update the runtime profile tree at every epoch with the new flows.
@@ -145,8 +81,6 @@ def update_runtime_profile(flows, profile_tree):
     flows: List of recorded IP flows
     profile_tree: tree object of the runtime profile of the device
     """
-    # if profile_tree.is_empty():
-    # generate the initial tree
     for flow_key in flows:
         if ip_address(flows[flow_key].sip).is_private:
             comp = "Local"
@@ -163,25 +97,6 @@ def update_runtime_profile(flows, profile_tree):
             comp = "Internet"
             dir = "to"
         add_to_node(comp, dir, profile_tree, flows[flow_key], "runtime")
-        # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
-        
-    # else:
-        # for flow_key in flows:
-        #     if ip_address(flows[flow_key].sip).is_private:
-        #         comp = "Local"
-        #         dir = "from"
-        #     else:
-        #         comp = "Internet"
-        #         dir = "from"
-        #     update_node(comp, dir, profile_tree, flows[flow_key])
-
-        #     if ip_address(flows[flow_key].dip).is_private:
-        #         comp = "Local"
-        #         dir = "to"
-        #     else:
-        #         comp = "Internet"
-        #         dir = "to"
-        #     update_node(comp, dir, profile_tree, flows[flow_key])
         # print("Number of leaves: " + str(profile_tree.get_num_leaves()))
 
 

@@ -74,6 +74,10 @@ class Flow(object):
         """
         Set the domains for the flow ips
         """
+
+        if domain and domain.endswith(".local"):
+            domain = ip
+
         if ip == self.sip:
             self.sdomain = domain
         elif ip == self.dip:

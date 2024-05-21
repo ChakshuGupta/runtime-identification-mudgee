@@ -102,6 +102,10 @@ def find_intersection(mud_profile, runtime_profile):
     
     # Get the nodes from the runtime profile
     nodes = temp_runtime_profile.get_all_nodes()
+    
+    # If the mud profile is empty, then return the empty intersection list.
+    if mud_profile.is_empty():
+        return intersection, temp_runtime_profile
 
     for node_name in nodes:
         # print("Checking node: ", node_name)
