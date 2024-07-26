@@ -55,7 +55,7 @@ def read_pcap(pcap_file):
         # Generate the DNS cache from the packets
         if packet.haslayer("DNS"):
             # Check if the packet has an answer to a DNS query
-            if packet["DNS"].an is not None:
+            if packet["DNS"].an is not None and len(packet["DNS"].an) > 0:
                 for i in range(packet["DNS"].ancount):
                     # Check if the answer type is A or CNAME
                     if packet["DNS"].an[i].type in [1, 5]:
