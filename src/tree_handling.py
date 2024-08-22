@@ -77,16 +77,10 @@ def update_runtime_profile(flows, profile_tree):
                 comp = "Local"
                 dir = "from"
             
-            elif flows[flow_key].sip == profile_tree.default_gateway:
-                if flows[flow_key].sport == DNS_PORT:
-                    flows[flow_key].sdomain = DNS_CONTROLLER
-                elif flows[flow_key].sport == NTP_PORT:
-                    flows[flow_key].sdomain = NTP_CONTROLLER
-                else:
-                    flows[flow_key].sdomain = DEFAULTGATEWAYCONTROLLER
-                
+            else:
                 comp = "Local"
                 dir = "to"
+
 
         elif ip_address(flows[flow_key].sip).is_private:
             comp = "Internet"
@@ -95,6 +89,10 @@ def update_runtime_profile(flows, profile_tree):
         elif ip_address(flows[flow_key].dip).is_private:
             comp = "Internet"
             dir = "from"
+        
+        else:
+            print(flows[flow_key].sip, flows[flow_key].dip)
+            continue
 
         add_to_node(comp, dir, profile_tree, flows[flow_key])
 
