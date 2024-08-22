@@ -128,21 +128,11 @@ def runtime_profile_generation(config, mud_profiles):
 
                         if dynamic_scores[-1][1] == 1:
                             print("Match Found!", dynamic_scores[-1][0])
-                            matches_dynamic.append(dynamic_scores[0])
-                            matches_static.append(static_scores[0])
                             
                         elif static_scores[-1][1] == 1:
                             print("Match Found!", static_scores[-1][0])
-                            matches_dynamic.append(dynamic_scores[0])
-                            matches_static.append(static_scores[0])
                             
         index += 1
-    
-    # If no scores availale: return None
-    if dynamic_scores is None or len(dynamic_scores) == 0:
-        dynamic_scores = [("", 0)]
-    if static_scores is None or len(static_scores) == 0:
-        static_scores = [("", 0)]
     
     print("Dynamic matches for every epoch", matches_dynamic)
     print("Static matches for every epoch", matches_static)
