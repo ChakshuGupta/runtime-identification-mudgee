@@ -13,7 +13,7 @@ if __name__ == "__main__":
     mud_profiles = load_mud_profiles(cfg["dir-mud-profiles"])
 
     start_time = time.time()
-    device_matched = runtime_profile_generation(cfg, mud_profiles)
+    dynamic_matches, static_matches = runtime_profile_generation(cfg, mud_profiles)
     end_time = time.time()
-    print("Device ", cfg["device-name"], " matched to --- ", device_matched)
+    print("Device ", cfg["device-name"], " matched to --- ", dynamic_matches[-1], static_matches[-1])
     print("Runtime to get the match: ", end_time- start_time)

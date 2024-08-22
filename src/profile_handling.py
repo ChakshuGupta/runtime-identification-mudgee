@@ -42,85 +42,110 @@ def runtime_profile_generation(config, mud_profiles):
     if mud_profiles is None or len(mud_profiles) == 0:
         return None
     
-    packets = list()
-    dns_cache = dict()
-    for pcap in pcap_list:
-        packet_list, temp_dns_cache = read_pcap(pcap)
-        packets.extend(packet_list)
-        dns_cache.update(temp_dns_cache)
-    
-    # Order read packets using time
-    packets  = sorted(packets, key=lambda ts: ts.time)
-    
-    # initialise time values
-    start_time = packets[0].time # time of the first packet
-    end_time = packets[-1].time # time of the last packet
-    total_time = end_time - start_time
-    in_time = 0 # time passed since the beginning of the epoch
-
-    # print the duration of the packet capture
-    print("\n\n------- Total time: " + str(total_time) + " -------\n\n")
-
     flows = dict()
     runtime_profile = Tree(config["device-name"], config["default-gateway-ip"])
 
-    device_matched = ""
+    pcap_list = sorted(pcap_list)
+    print(pcap_list)
 
+    matches_dynamic = []
+    matches_static = []
     dynamic_scores, static_scores = None, None
-    # Traverse the packets in the list
-    for packet in packets:
-        # Check if packet has none fields
-        if packet.is_none():
-            print("Packet is none")
-            continue
-        
-        # get the time passed since start of the epoch
-        in_time = packet.time - start_time
-        
-        # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
-        # Using frozenset to ensure the key is hashable (a requirement for dict keys)
-        key = (packet.proto, frozenset({packet.sip, packet.dip}))
-        # Add a the packet to the flow
-        flows[key] = flows.get(key, Flow()).add(packet)
-        # Set domain for the source IP and destination IP
-        flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, None))
-        flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, None))
-        
-        if in_time >= EPOCH_TIME or in_time == total_time:
-            # if the time pass has crossed epoch compute similarity scores
-            # it is not ">=", since we still want to add packets to the flows till 
-            # we reach the epoch
-            print("Time passed: " + str(in_time))
 
-            in_time = 0
-            start_time = start_time + min(EPOCH_TIME, total_time)
+    dns_cache = dict()
+    
+    start_time = 0
+    end_time = 0
+    index = 0
+
+    for pcap in pcap_list:
+        print(pcap)
+        packets, temp_dns_cache = read_pcap(pcap)
+        dns_cache.update(temp_dns_cache)
+        
+        if index == 0 or end_time - start_time >= EPOCH_TIME:
+            # initialise time values
+            start_time = packets[0].time # time of the first packet
+            end_time = packets[-1].time
+
+        # Traverse the packets in the list
+        for packet in packets:
+            # Check if packet has none fields
+            if packet.is_none():
+                print("Packet is none")
+                continue
+            # get the time passed since start of the epoch
+            in_time = packet.time - start_time
             
-            update_runtime_profile(flows, runtime_profile)
+            # Generate a key using packet protocol and a frozen set of source IP and destination IP and ports
+            # Using frozenset to ensure the key is hashable (a requirement for dict keys)
+            key = (packet.proto, frozenset({packet.sip, packet.dip}))
+            # Add a the packet to the flow
+            flows[key] = flows.get(key, Flow()).add(packet)
+            # Set domain for the source IP and destination IP
+            flows[key].set_domain(packet.sip, dns_cache.get(packet.sip, None))
+            flows[key].set_domain(packet.dip, dns_cache.get(packet.dip, None))
+            
+            if in_time >= EPOCH_TIME:
+                # if the time pass has crossed epoch compute similarity scores
+                print("Time passed: " + str(in_time))
 
-            dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
-            print(dynamic_scores, static_scores)
+                in_time = 0
+                start_time = packet.time
 
-            if len(dynamic_scores) > 0 and len(static_scores) > 0:
+                old_num_leaves = runtime_profile.get_num_leaves()                
+                update_runtime_profile(flows, runtime_profile)
+                new_num_leaves = runtime_profile.get_num_leaves()                
 
-                print("Highest dynamic score : ", dynamic_scores[0])
-                print("Highest static score : ", static_scores[0])
+                if new_num_leaves != old_num_leaves:
+                    dynamic_scores, static_scores = compute_similarity_scores(mud_profiles, runtime_profile)
+                    print(dynamic_scores, static_scores)
 
-                if dynamic_scores[-1][1] == 1:
-                    print("Match Found!", dynamic_scores[-1][0])
-                    device_matched = {"dynamic_score": dynamic_scores[0], "static_score":  static_scores[0]}
-                    break
-                elif static_scores[-1][1] == 1:
-                    print("Match Found!", static_scores[-1][0])
-                    device_matched = {"dynamic_score": dynamic_scores[0], "static_score":  static_scores[0]}
-                    break
+                    if len(dynamic_scores) > 0 and len(static_scores) > 0:
+
+                        print("Highest dynamic score : ", dynamic_scores[0])
+                        print("Highest static score : ", static_scores[0])
+                        
+                        winner_dynamic = {}
+                        winner_dynamic[dynamic_scores[0][1]]=[]
+                        for device, score in dynamic_scores:
+                            if score not in winner_dynamic.keys():
+                                continue
+                            winner_dynamic[score].append(device)
+                        
+                        winner_static = {}
+                        winner_static[static_scores[0][1]]=[]
+                        for device, score in static_scores:
+                            if score not in winner_static.keys():
+                                continue
+                            winner_static[score].append(device)
+                        
+                        print(winner_dynamic)
+                        print(winner_static)
+                        
+                        matches_dynamic.append(winner_dynamic)
+                        matches_static.append(winner_static)
+
+                        if dynamic_scores[-1][1] == 1:
+                            print("Match Found!", dynamic_scores[-1][0])
+                            matches_dynamic.append(dynamic_scores[0])
+                            matches_static.append(static_scores[0])
+                            
+                        elif static_scores[-1][1] == 1:
+                            print("Match Found!", static_scores[-1][0])
+                            matches_dynamic.append(dynamic_scores[0])
+                            matches_static.append(static_scores[0])
+                            
+        index += 1
     
     # If no scores availale: return None
     if dynamic_scores is None or len(dynamic_scores) == 0:
         dynamic_scores = [("", 0)]
     if static_scores is None or len(static_scores) == 0:
         static_scores = [("", 0)]
-
-    device_matched = {"dynamic_score": dynamic_scores, "static_score":  static_scores}
+    
+    print("Dynamic matches for every epoch", matches_dynamic)
+    print("Static matches for every epoch", matches_static)
 
     runtime_profile.print()
-    return device_matched
+    return matches_dynamic, matches_static

@@ -26,7 +26,6 @@ def compute_similarity_scores(mud_profiles, runtime_profile):
         print("\n Checking device: ", device)
         # find the intersection between the MUD profile tree and the runtime profile tree
         intersection, temp_profile = find_intersection(mud_profiles[device], runtime_profile)
-
         print(runtime_profile.device_name, device, intersection)
         # compute the similarity scores
         dynamic_scores[device] = compute_dynamic_similarity(len(intersection), temp_profile.get_num_leaves())
@@ -166,9 +165,9 @@ def find_intersection(mud_profile, runtime_profile):
                             proto_match = True
                         
                         if PROTOCOLS.get(runtime_leaf.proto) == "UDP":
-                             # if protocol is UDP, only check if src or dst port macthes and add to the matches list
-                             if sip_match and dip_match and proto_match :
-                                 matches.append((runtime_domain, runtime_leaf))
+                             # if protocol is UDP, only check if dst port macthes as source port is dynamic for UDP
+                            if sip_match and dip_match and proto_match and dport_match:
+                                matches.append((runtime_domain, runtime_leaf))
                         else:
                             # if all are true, add to the matches list
                             if sip_match and dip_match and sport_match and dport_match and proto_match:
@@ -182,8 +181,8 @@ def find_intersection(mud_profile, runtime_profile):
                         # from the temporary runtime profile
                         print("\nRemove redundant leaves......")
                         # print(matches)
-                        for iter in range(0, len(matches)-1):
-                            temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter+1][0], matches[iter+1][1])
+                        for iter in range(1, len(matches)):
+                            temp_runtime_profile.get_node(node_name).remove_leaf(matches[iter][0], matches[iter][1])
 
     return intersection, temp_runtime_profile
 
